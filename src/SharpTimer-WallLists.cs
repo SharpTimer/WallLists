@@ -637,6 +637,7 @@ namespace SharpTimerWallLists
         {
             string query;
             string tablePrefix = Config.DatabaseSettings.TablePrefix;
+            string ConfigStyle = Config.ConfigStyle;
 
             if (Config.DatabaseType == 1) // MySQL
             {
@@ -664,7 +665,7 @@ namespace SharpTimerWallLists
                             FormattedTime,
                             DENSE_RANK() OVER (ORDER BY STR_TO_DATE(FormattedTime, '%i:%s.%f') ASC) AS playerPlace
                         FROM {tablePrefix}PlayerRecords
-                        WHERE MapName = @MapName
+                        WHERE MapName = @MapName AND Style = {ConfigStyle}
                     )
                     SELECT SteamID, PlayerName, FormattedTime, playerPlace
                     FROM RankedPlayers
