@@ -83,6 +83,9 @@ namespace SharpTimerWallLists
         [JsonPropertyName("CommandPermission")]
         public string CommandPermission { get; set; } = "@css/root";
 
+        [JsonPropertyName("ConfigStyle")]
+        public string ConfigStyle { get; set; } = "0";
+
         [JsonPropertyName("ConfigVersion")]
         public override int Version { get; set; } = 3;
     }
