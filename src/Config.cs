@@ -87,7 +87,7 @@ namespace SharpTimerWallLists
         public string ConfigStyle { get; set; } = "0";
 
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 3;
+        public override int Version { get; set; } = 4;
     }
 
     public sealed class DatabaseSettings
