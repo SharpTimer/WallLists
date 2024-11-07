@@ -3,7 +3,7 @@
   "TopCount": 5, // Number of spots on the list
   "TimeBasedUpdate": false, // true = Updates on UpdateInterval, false = Updates on map change
   "UpdateInterval": 60, // The number in second between updates
-  "DatabaseType": 1, // 1 = MySQL, 2 = SQLite, 3 = PostgrSQL
+  "DatabaseType": 1, // 1 = MySQL, 2 = SQLite, 3 = PostgreSQL
   "DatabaseSettings": {
     "host": "localhost",
     "username": "root",
@@ -34,5 +34,6 @@
   "CompletionsListCommand": "completionslist", // The command to add a completions list, in game use !completionslist
   "RemoveListCommand": "removelist", // The command to remove a list, in game use !removelist
   "CommandPermission": "@css/root", // The permission required to use these commands
-  "ConfigVersion": 3
+  "RecordStyle": "0", // Set the style you want the be displayed on the times lists, 0 = normal times
+  "ConfigVersion": 4
 }
