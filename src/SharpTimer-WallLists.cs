@@ -23,7 +23,7 @@ namespace SharpTimerWallLists
     {
         public override string ModuleName => "SharpTimer Wall Lists";
         public override string ModuleAuthor => "Marchand";
-        public override string ModuleVersion => "1.0.2";
+        public override string ModuleVersion => "1.0.3";
 
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public static PluginCapability<IK4WorldTextSharedAPI> Capability_SharedAPI { get; } = new("k4-worldtext:sharedapi");
@@ -113,7 +113,7 @@ namespace SharpTimerWallLists
                     "verifyfull" => MySqlSslMode.VerifyFull,
                     _ => MySqlSslMode.None
                 };
-                _connectionString = $@"Server={dbSettings.Host};Port={dbSettings.Port};Database={dbSettings.Database};Uid={dbSettings.Username};Pwd={dbSettings.Password};SslMode={mySqlSslMode};";
+                _connectionString = $@"Server={dbSettings.Host};Port={dbSettings.Port};Database={dbSettings.Database};Uid={dbSettings.Username};Pwd={dbSettings.Password};SslMode={mySqlSslMode};AllowPublicKeyRetrieval=True;";
             }
             else if (Config.DatabaseType == 2)
             {
@@ -637,7 +637,7 @@ namespace SharpTimerWallLists
         {
             string query;
             string tablePrefix = Config.DatabaseSettings.TablePrefix;
-            string ConfigStyle = Config.ConfigStyle;
+            string RecordStyle = Config.RecordStyle;
 
             if (Config.DatabaseType == 1) // MySQL
             {
@@ -665,7 +665,7 @@ namespace SharpTimerWallLists
                             FormattedTime,
                             DENSE_RANK() OVER (ORDER BY STR_TO_DATE(FormattedTime, '%i:%s.%f') ASC) AS playerPlace
                         FROM {tablePrefix}PlayerRecords
-                        WHERE MapName = @MapName AND Style = {ConfigStyle}
+                        WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
                     SELECT SteamID, PlayerName, FormattedTime, playerPlace
                     FROM RankedPlayers
@@ -736,7 +736,7 @@ namespace SharpTimerWallLists
                             FormattedTime,
                             DENSE_RANK() OVER (ORDER BY strftime('%M:%S.%f', FormattedTime) ASC) AS playerPlace
                         FROM {tablePrefix}PlayerRecords
-                        WHERE MapName = @MapName
+                        WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
                     SELECT SteamID, PlayerName, FormattedTime, playerPlace
                     FROM RankedPlayers
@@ -807,7 +807,7 @@ namespace SharpTimerWallLists
                             ""FormattedTime"",
                             DENSE_RANK() OVER (ORDER BY to_timestamp(""FormattedTime"", 'MI:SS.US') ASC) AS playerPlace
                         FROM ""{tablePrefix}PlayerRecords""
-                        WHERE ""MapName"" = @MapName
+                        WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}
                     )
                     SELECT ""SteamID"", ""PlayerName"", ""FormattedTime"", playerPlace
                     FROM RankedPlayers
