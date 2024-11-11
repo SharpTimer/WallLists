@@ -612,7 +612,7 @@ namespace SharpTimerWallLists
                     var pointsOrTimeOrCompletions = listType switch
                     {
                         ListType.Points => topplayer.GlobalPoints.ToString(),
-                        ListType.Times => topplayer.FormattedTime,
+                        ListType.Times => FormatTime(topplayer.TimerTicks),
                         ListType.Completions => topplayer.Completions.ToString(),
                         _ => string.Empty
                     };
@@ -631,6 +631,20 @@ namespace SharpTimerWallLists
             }
 
             return linesList;
+        }
+        public static string FormatTime(int ticks)
+        {
+            TimeSpan timeSpan = TimeSpan.FromSeconds(ticks / 64.0);
+
+            string milliseconds = $"{ticks % 64 * (1000.0 / 64.0):000}";
+
+            int totalMinutes = (int)timeSpan.TotalMinutes;
+            if (totalMinutes >= 60)
+            {
+                return $"{totalMinutes / 60:D1}:{totalMinutes % 60:D2}:{timeSpan.Seconds:D2}.{milliseconds}";
+            }
+
+            return $"{totalMinutes:D1}:{timeSpan.Seconds:D2}.{milliseconds}";
         }
 
         public async Task<List<PlayerPlace>> GetTopPlayersAsync(int topCount, ListType listType, string mapName)
@@ -662,14 +676,14 @@ namespace SharpTimerWallLists
                         SELECT
                             SteamID,
                             PlayerName,
-                            FormattedTime,
-                            DENSE_RANK() OVER (ORDER BY STR_TO_DATE(FormattedTime, '%i:%s.%f') ASC) AS playerPlace
+                            TimerTicks,
+                            DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
                         FROM {tablePrefix}PlayerRecords
                         WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
-                    SELECT SteamID, PlayerName, FormattedTime, playerPlace
+                    SELECT SteamID, PlayerName, TimerTicks, playerPlace
                     FROM RankedPlayers
-                    ORDER BY STR_TO_DATE(FormattedTime, '%i:%s.%f') ASC
+                    ORDER BY TimerTicks ASC
                     LIMIT @TopCount",
 
                     ListType.Completions => $@"
@@ -733,14 +747,14 @@ namespace SharpTimerWallLists
                         SELECT
                             SteamID,
                             PlayerName,
-                            FormattedTime,
-                            DENSE_RANK() OVER (ORDER BY strftime('%M:%S.%f', FormattedTime) ASC) AS playerPlace
+                            TimerTicks,
+                            DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
                         FROM {tablePrefix}PlayerRecords
                         WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
-                    SELECT SteamID, PlayerName, FormattedTime, playerPlace
+                    SELECT SteamID, PlayerName, TimerTicks, playerPlace
                     FROM RankedPlayers
-                    ORDER BY strftime('%M:%S.%f', FormattedTime) ASC
+                    ORDER BY TimerTicks ASC
                     LIMIT @TopCount",
 
                     ListType.Completions => $@"
@@ -804,14 +818,14 @@ namespace SharpTimerWallLists
                         SELECT
                             ""SteamID"",
                             ""PlayerName"",
-                            ""FormattedTime"",
-                            DENSE_RANK() OVER (ORDER BY to_timestamp(""FormattedTime"", 'MI:SS.US') ASC) AS playerPlace
+                            ""TimerTicks"",
+                            DENSE_RANK() OVER (ORDER BY ""TimerTicks"" ASC) AS playerPlace
                         FROM ""{tablePrefix}PlayerRecords""
                         WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}
                     )
-                    SELECT ""SteamID"", ""PlayerName"", ""FormattedTime"", playerPlace
+                    SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", playerPlace
                     FROM RankedPlayers
-                    ORDER BY to_timestamp(""FormattedTime"", 'MI:SS.US') ASC
+                    ORDER BY ""TimerTicks"" ASC
                     LIMIT @TopCount",
 
                     ListType.Completions => $@"
@@ -872,7 +886,7 @@ namespace SharpTimerWallLists
     {
         public required string PlayerName { get; set; }
         public int GlobalPoints { get; set; }
-        public string? FormattedTime { get; set; }
+        public int TimerTicks { get; set; }
         public int Completions { get; set; }
     }
 
