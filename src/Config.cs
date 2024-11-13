@@ -69,16 +69,16 @@ namespace SharpTimerWallLists
         public string DefaultColor { get; set; } = "White";
 
         [JsonPropertyName("PointsListCommand")]
-        public string PointsListCommand { get; set; } = "pointslist";
+        public string PointsListCommand { get; set; } = "plist";
 
         [JsonPropertyName("TimesListCommand")]
-        public string TimesListCommand { get; set; } = "timeslist";
+        public string TimesListCommand { get; set; } = "tlist";
 
         [JsonPropertyName("CompletionsListCommand")]
-        public string CompletionsListCommand { get; set; } = "completionslist";
+        public string CompletionsListCommand { get; set; } = "clist";
 
         [JsonPropertyName("RemoveListCommand")]
-        public string RemoveListCommand { get; set; } = "removelist";
+        public string RemoveListCommand { get; set; } = "rlist";
 
         [JsonPropertyName("CommandPermission")]
         public string CommandPermission { get; set; } = "@css/root";
