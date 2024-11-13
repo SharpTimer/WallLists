@@ -63,6 +63,8 @@ All commands can be configured, these are the default commands:
 - [X] Add left alignment.
 - [X] Add a Map Completions List.
 - [X] Add alignment options for each type of list.
+- [ ] Add minor position adjustment commands.
+- [ ] Add database support for more convenient multi-server maintencance.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
