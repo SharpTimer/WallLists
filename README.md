@@ -1,19 +1,16 @@
 <a name="readme-top"></a>
-
-> [!IMPORTANT]
-> Credits for the base plugin go to [K4ryuu](https://github.com/K4ryuu)! I made changes to it to work with SharpTimer and added several extra features.
-
+[![UpdateManager Compatible](https://img.shields.io/badge/CS2-UpdateManager-darkgreen)](https://github.com/Kandru/cs2-update-manager/)
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <h1 align="center">SharpTimer Wall Lists</h1>
-  <a align="center">Provides three lists to display on the map, a player Points List, and a Map Time List, and a # of Map Completions List.<br>Dynamically updates on either map start or a given interval.</a><br>
+  <a align="center">Provides three lists to display on the map: Times List, Points List, Completions List.<br>Dynamically updates on either map start or a given interval. Supports <a href="https://github.com/Kandru/cs2-update-manager">automatic updates</a>.</a><br>
   <br>
   <img src="https://files.catbox.moe/mjhgo0.png" alt="" style="margin: 0;">
 
   <p align="center">
     <br />
-    <a href="https://github.com/M-archand/SharpTimer-WallLists/releases/tag/1.0.2">Download</a>
+    <a href="https://github.com/M-archand/SharpTimer-WallLists/releases/tag/1.0.5">Download</a>
   </p>
 </div>
 
@@ -35,10 +32,12 @@ To use this server addon, you'll need the following dependencies installed:
 
 Default Access: @css/root, can be configured.
 All commands can be configured, these are the default commands:
-- !pointslist - Create a points list in front of the player and save it to a config file.
 - !timeslist  - Create a map records list for the current map in front of the player and save it to a config file.
+- !pointslist - Create a points list in front of the player and save it to a config file.
 - !completionslist - Create a # of map completions list in fron of the player and save it to a config file.
 - !removelist - Remove the closest list from your position. (100 units max)
+- !reloadlistcfg - Reload your config live in-game. Takes about 15 seconds.
+- !updatelistcfg - Update your config with any new variables that have been added in a new version.
 
 <!-- CONFIG -->
 
@@ -67,6 +66,9 @@ All commands can be configured, these are the default commands:
 - [ ] Add database support for more convenient multi-server maintencance.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+> [!IMPORTANT]
+> Credits for the base plugin go to [K4ryuu](https://github.com/K4ryuu)! I made changes for it to work with SharpTimer and added several extra features.
 
 <!-- LICENSE -->
 
