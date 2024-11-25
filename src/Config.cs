@@ -5,29 +5,42 @@ namespace SharpTimerWallLists
 {
     public class PluginConfig : BasePluginConfig
     {
-        [JsonPropertyName("TopCount")]
-        public int TopCount { get; set; } = 5;
-
-        [JsonPropertyName("TimeBasedUpdate")]
-        public bool TimeBasedUpdate { get; set; } = false;
-
-        [JsonPropertyName("UpdateInterval")]
-        public int UpdateInterval { get; set; } = 60;
-
         [JsonPropertyName("DatabaseType")]
         public int DatabaseType { get; set; } = 1; // 1 = MySQL, 2 = SQLite. 3 = Postgres
-
         [JsonPropertyName("DatabaseSettings")]
         public DatabaseSettings DatabaseSettings { get; set; } = new DatabaseSettings();
+
+        /////////////////////////////////////////////////////////////////////////////////
+
+        [JsonPropertyName("TimesTitleText")]
+        public string TimesTitleText { get; set; } = "|---- Map Times ----|";
+
+        [JsonPropertyName("TimesTextAlignment")]
+        public string TimesTextAlignment { get; set; } = "center";
+
+        [JsonPropertyName("TimesCount")]
+        public int TimesCount { get; set; } = 5;
+
 
         [JsonPropertyName("PointsTitleText")]
         public string PointsTitleText { get; set; } = "|--- Points Leaders ---|";
 
-        [JsonPropertyName("TimesTitleText")]
-        public string TimesTitleText { get; set; } = "|---- Map Records ----|";
+        [JsonPropertyName("PointsTextAlignment")]
+        public string PointsTextAlignment { get; set; } = "center";
+        [JsonPropertyName("PointsCount")]
+        public int PointsCount { get; set; } = 5;
+
 
         [JsonPropertyName("CompletionsTitleText")]
         public string CompletionsTitleText { get; set; } = "|--- Maps Completed ---|";
+        
+        [JsonPropertyName("CompletionsTextAlignment")]
+        public string CompletionsTextAlignment { get; set; } = "center";
+
+        [JsonPropertyName("CompletionsCount")]
+        public int CompletionsCount { get; set; } = 5;
+
+        /////////////////////////////////////////////////////////////////////////////////
 
         [JsonPropertyName("TitleFontSize")]
         public int TitleFontSize { get; set; } = 26;
@@ -44,15 +57,6 @@ namespace SharpTimerWallLists
         [JsonPropertyName("MaxNameLength")]
         public int MaxNameLength { get; set; } = 32; // Default value, 32 is max Steam name length
 
-        [JsonPropertyName("PointsTextAlignment")]
-        public string PointsTextAlignment { get; set; } = "center";
-
-        [JsonPropertyName("TimesTextAlignment")]
-        public string TimesTextAlignment { get; set; } = "center";
-
-        [JsonPropertyName("CompletionsTextAlignment")]
-        public string CompletionsTextAlignment { get; set; } = "center";
-
         [JsonPropertyName("TitleTextColor")]
         public string TitleTextColor { get; set; } = "Magenta";
 
@@ -68,26 +72,45 @@ namespace SharpTimerWallLists
         [JsonPropertyName("DefaultColor")]
         public string DefaultColor { get; set; } = "White";
 
-        [JsonPropertyName("PointsListCommand")]
-        public string PointsListCommand { get; set; } = "plist";
+        /////////////////////////////////////////////////////////////////////////////////
 
         [JsonPropertyName("TimesListCommand")]
-        public string TimesListCommand { get; set; } = "tlist";
+        public string TimesListCommand { get; set; } = "timeslist";
+       
+        [JsonPropertyName("PointsListCommand")]
+        public string PointsListCommand { get; set; } = "pointslist";
 
         [JsonPropertyName("CompletionsListCommand")]
-        public string CompletionsListCommand { get; set; } = "clist";
+        public string CompletionsListCommand { get; set; } = "completionslist";
 
         [JsonPropertyName("RemoveListCommand")]
-        public string RemoveListCommand { get; set; } = "rlist";
+        public string RemoveListCommand { get; set; } = "removelist";
+
+        [JsonPropertyName("ReloadConfigCommand")]
+        public string ReloadConfigCommand { get; set; } = "reloadlistcfg";
+
+        [JsonPropertyName("UpdateConfigCommand")]
+        public string UpdateConfigCommand { get; set; } = "updatelistcfg";
 
         [JsonPropertyName("CommandPermission")]
         public string CommandPermission { get; set; } = "@css/root";
 
+        /////////////////////////////////////////////////////////////////////////////////
+
+        [JsonPropertyName("TimeBasedUpdate")]
+        public bool TimeBasedUpdate { get; set; } = false;
+
+        [JsonPropertyName("UpdateInterval")]
+        public int UpdateInterval { get; set; } = 60;
+
         [JsonPropertyName("RecordStyle")]
         public string RecordStyle { get; set; } = "0";
 
+        [JsonPropertyName("AutoUpdateConfig")]
+        public bool AutoUpdateConfig { get; set; } = false;
+
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 4;
+        public override int Version { get; set; } = 5;
     }
 
     public sealed class DatabaseSettings
