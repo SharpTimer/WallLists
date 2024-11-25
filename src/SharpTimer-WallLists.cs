@@ -1,38 +1,33 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Core.Capabilities;
-using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.Extensions;
 using K4WorldTextSharedAPI;
 using System.Drawing;
-using System.Data.SQLite;
 using System.Text.Json;
-using Dapper;
 using Microsoft.Extensions.Logging;
-using MySqlConnector;
-using Npgsql;
 
 namespace SharpTimerWallLists
 {
-    [MinimumApiVersion(205)]
-    public class PluginSharpTimerWallLists : BasePlugin, IPluginConfig<PluginConfig>
+    [MinimumApiVersion(288)]
+    public partial class Plugin : BasePlugin, IPluginConfig<PluginConfig>
     {
         public override string ModuleName => "SharpTimer Wall Lists";
         public override string ModuleAuthor => "Marchand";
-        public override string ModuleVersion => "1.0.4";
+        public override string ModuleVersion => "1.0.5";
 
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public static PluginCapability<IK4WorldTextSharedAPI> Capability_SharedAPI { get; } = new("k4-worldtext:sharedapi");
-        private List<int> _currentPointsList = new();
-        private List<int> _currentMapList = new();
-        private List<int> _currentCompletionsList = new();
         private CounterStrikeSharp.API.Modules.Timers.Timer? _updateTimer;
-        private string? _databasePath;
-        private string? _connectionString;
+        private List<int> _currentPointsList = new();
+        private List<int> _currentTimesList = new();
+        private List<int> _currentCompletionsList = new();
+
+        public string pluginPrefix = $" {ChatColors.Magenta}[{ChatColors.LightPurple}Wall-Lists{ChatColors.Magenta}]";
 
         public void OnConfigParsed(PluginConfig config)
         {
@@ -44,14 +39,37 @@ namespace SharpTimerWallLists
 
         public override void OnAllPluginsLoaded(bool hotReload)
         {
+            try
+            {
+                Config.Reload();
+            }
+            catch (Exception)
+            {
+                Logger.LogWarning($"Failed to reload config file.");
+            }
+            
+            if (Config.AutoUpdateConfig == true)
+            {
+                try
+                {
+                    Config.Update();
+                }
+                catch (Exception)
+                {
+                    Logger.LogWarning($"Failed to update config file.");
+                }
+            }
+
             InitializeDatabasePathAndConnectionString();
 
             AddTimer(3, () => LoadWorldTextFromFile(Server.MapName));
 
+            AddCommand($"css_{Config.TimesListCommand}", "Sets up the map times list", OnMapListAdd);
             AddCommand($"css_{Config.PointsListCommand}", "Sets up the points list", OnPointsListAdd);
-            AddCommand($"css_{Config.TimesListCommand}", "Sets up the map records list", OnMapListAdd);
             AddCommand($"css_{Config.CompletionsListCommand}", "Sets up the map completions list", OnCompletionsListAdd);
-            AddCommand($"css_{Config.RemoveListCommand}", "Removes the closest list, whether points or map", OnRemoveList);
+            AddCommand($"css_{Config.RemoveListCommand}", "Removes the closest list (100 units max)", OnRemoveList);
+            AddCommand($"css_{Config.ReloadConfigCommand}", "Reloads the config file", ReloadConfigCommand);
+            AddCommand($"css_{Config.UpdateConfigCommand}", "Updates the config to the latest version", UpdateConfigCommand);
 
             if (Config.TimeBasedUpdate)
             {
@@ -75,11 +93,11 @@ namespace SharpTimerWallLists
                 if (checkAPI != null)
                 {
                     _currentPointsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
-                    _currentMapList.ForEach(id => checkAPI.RemoveWorldText(id, false));
+                    _currentTimesList.ForEach(id => checkAPI.RemoveWorldText(id, false));
                     _currentCompletionsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
                 }
                 _currentPointsList.Clear();
-                _currentMapList.Clear();
+                _currentTimesList.Clear();
                 _currentCompletionsList.Clear();
             });
         }
@@ -90,86 +108,13 @@ namespace SharpTimerWallLists
             if (checkAPI != null)
             {
                 _currentPointsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
-                _currentMapList.ForEach(id => checkAPI.RemoveWorldText(id, false));
+                _currentTimesList.ForEach(id => checkAPI.RemoveWorldText(id, false));
                 _currentCompletionsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
             }
             _currentPointsList.Clear();
-            _currentMapList.Clear();
+            _currentTimesList.Clear();
             _currentCompletionsList.Clear();
             _updateTimer?.Kill();
-        }
-
-        private void InitializeDatabasePathAndConnectionString()
-        {
-            var dbSettings = Config.DatabaseSettings;
-            if (Config.DatabaseType == 1)
-            {
-                var mySqlSslMode = dbSettings.Sslmode.ToLower() switch
-                {
-                    "none" => MySqlSslMode.None,
-                    "preferred" => MySqlSslMode.Preferred,
-                    "required" => MySqlSslMode.Required,
-                    "verifyca" => MySqlSslMode.VerifyCA,
-                    "verifyfull" => MySqlSslMode.VerifyFull,
-                    _ => MySqlSslMode.None
-                };
-                _connectionString = $@"Server={dbSettings.Host};Port={dbSettings.Port};Database={dbSettings.Database};Uid={dbSettings.Username};Pwd={dbSettings.Password};SslMode={mySqlSslMode};AllowPublicKeyRetrieval=True;";
-            }
-            else if (Config.DatabaseType == 2)
-            {
-                _databasePath = Path.Combine(Server.GameDirectory, "csgo", "cfg", "SharpTimer", "database.db");
-                _connectionString = $"Data Source={_databasePath};Version=3;";
-            }
-            else if (Config.DatabaseType == 3)
-            {
-                var npgSqlSslMode = dbSettings.Sslmode.ToLower() switch
-                {
-                    "disable" => SslMode.Disable,
-                    "require" => SslMode.Require,
-                    "prefer" => SslMode.Prefer,
-                    "allow" => SslMode.Allow,
-                    "verify-full" => SslMode.VerifyFull,
-                    _ => SslMode.Disable
-                };
-                _connectionString = $"Host={dbSettings.Host};Port={dbSettings.Port};Database={dbSettings.Database};Username={dbSettings.Username};Password={dbSettings.Password};SslMode={npgSqlSslMode};";
-            }
-        }
-
-        [ConsoleCommand($"css_{DefaultCommandNames.PointsListCommand}", "Sets up the points list")]
-        [RequiresPermissions($"{DefaultCommandNames.CommandPermission}")]
-        public void OnPointsListAdd(CCSPlayerController? player, CommandInfo? command)
-        {
-            if (player == null || command == null) return;
-            CreateTopList(player, command, ListType.Points);
-        }
-
-        [ConsoleCommand($"css_{DefaultCommandNames.TimesListCommand}", "Sets up the map top list")]
-        [RequiresPermissions($"{DefaultCommandNames.CommandPermission}")]
-        public void OnMapListAdd(CCSPlayerController? player, CommandInfo? command)
-        {
-            if (player == null || command == null) return;
-            CreateTopList(player, command, ListType.Times);
-        }
-
-        [ConsoleCommand($"css_{DefaultCommandNames.CompletionsListCommand}", "Sets up the map completions list")]
-        [RequiresPermissions($"{DefaultCommandNames.CommandPermission}")]
-        public void OnCompletionsListAdd(CCSPlayerController? player, CommandInfo? command)
-        {
-            if (player == null || command == null) return;
-            CreateTopList(player, command, ListType.Completions);
-        }
-
-        [ConsoleCommand($"css_{DefaultCommandNames.RemoveListCommand}", "Removes the closest list, whether points, map time, or completions")]
-        [RequiresPermissions($"{DefaultCommandNames.CommandPermission}")]
-        public void OnRemoveList(CCSPlayerController? player, CommandInfo? command)
-        {
-            if (player == null || command == null) return;
-            RemoveClosestList(player, command);
-            Task.Run(async () =>
-            {
-                await Task.Delay(1000);
-                Server.NextWorldUpdate(() => RemoveClosestList(player, command));
-            });
         }
 
         private void CreateTopList(CCSPlayerController player, CommandInfo command, ListType listType)
@@ -177,7 +122,7 @@ namespace SharpTimerWallLists
             var checkAPI = Capability_SharedAPI.Get();
             if (checkAPI is null)
             {
-                command.ReplyToCommand($" {ChatColors.Purple}[{ChatColors.Red}{listType}WallLists{ChatColors.Purple}] {ChatColors.LightRed}Failed to get the shared API.");
+                command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}Failed to get the shared API.");
                 return;
             }
 
@@ -187,7 +132,15 @@ namespace SharpTimerWallLists
             {
                 try
                 {
-                    var topList = await GetTopPlayersAsync(Config.TopCount, listType, mapName);
+                    int topCount = listType switch
+                    {
+                        ListType.Points => Config.PointsCount,
+                        ListType.Times => Config.TimesCount,
+                        ListType.Completions => Config.CompletionsCount,
+                        _ => throw new ArgumentException("Invalid list type")
+                    };
+
+                    var topList = await GetTopPlayersAsync(topCount, listType, mapName);
                     var linesList = GetTopListTextLines(topList, listType);
 
                     Server.NextWorldUpdate(() =>
@@ -198,7 +151,7 @@ namespace SharpTimerWallLists
                             if (listType == ListType.Points)
                                 _currentPointsList.Add(messageID);
                             if (listType == ListType.Times)
-                                _currentMapList.Add(messageID);
+                                _currentTimesList.Add(messageID);
                             if (listType == ListType.Completions)
                                 _currentCompletionsList.Add(messageID);
 
@@ -232,11 +185,11 @@ namespace SharpTimerWallLists
             var checkAPI = Capability_SharedAPI.Get();
             if (checkAPI is null)
             {
-                command.ReplyToCommand($" {ChatColors.Purple}[{ChatColors.LightPurple}WallLists{ChatColors.Purple}] {ChatColors.LightRed}Failed to get the shared API.");
+                command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}Failed to get the shared K4-API.");
                 return;
             }
 
-            var combinedList = _currentPointsList.Concat(_currentMapList).Concat(_currentCompletionsList).ToList();
+            var combinedList = _currentPointsList.Concat(_currentTimesList).Concat(_currentCompletionsList).ToList();
 
             var target = combinedList
                 .SelectMany(id => checkAPI.GetWorldTextLineEntities(id)?.Select(entity => new 
@@ -244,7 +197,7 @@ namespace SharpTimerWallLists
                     Id = id, 
                     Entity = entity, 
                     IsPointsList = _currentPointsList.Contains(id),
-                    IsMapList = _currentMapList.Contains(id),
+                    IsTimesList = _currentTimesList.Contains(id),
                     IsCompletionsList = _currentCompletionsList.Contains(id)
                 }) ?? Enumerable.Empty<dynamic>())
                 .Where(x => x.Entity.AbsOrigin != null && player.PlayerPawn.Value?.AbsOrigin != null && DistanceTo(x.Entity.AbsOrigin, player.PlayerPawn.Value!.AbsOrigin) < 100)
@@ -253,7 +206,7 @@ namespace SharpTimerWallLists
 
             if (target is null)
             {
-                command.ReplyToCommand($" {ChatColors.Purple}[{ChatColors.LightPurple}WallLists{ChatColors.Purple}] {ChatColors.Red}Move closer to the list that you want to remove.");
+                command.ReplyToCommand($"{pluginPrefix} {ChatColors.Red}Move closer to the list that you want to remove.");
                 return;
             }
 
@@ -265,9 +218,9 @@ namespace SharpTimerWallLists
                 {
                     _currentPointsList.Remove(target.Id);
                 }
-                else if (target.IsMapList)
+                else if (target.IsTimesList)
                 {
-                    _currentMapList.Remove(target.Id);
+                    _currentTimesList.Remove(target.Id);
                 }
                 else if (target.IsCompletionsList)
                 {
@@ -278,7 +231,7 @@ namespace SharpTimerWallLists
                 var mapsDirectory = Path.Combine(ModuleDirectory, "maps");
                 var path = target.IsPointsList
                     ? Path.Combine(mapsDirectory, $"{mapName}_pointslist.json")
-                    : target.IsMapList
+                    : target.IsTimesList
                         ? Path.Combine(mapsDirectory, $"{mapName}_timeslist.json")
                         : Path.Combine(mapsDirectory, $"{mapName}_completionslist.json");
 
@@ -305,7 +258,7 @@ namespace SharpTimerWallLists
                         File.WriteAllText(path, jsonString);
                     }
                 }
-                command.ReplyToCommand($" {ChatColors.Purple}[{ChatColors.LightPurple}WallLists{ChatColors.Purple}] {ChatColors.Green}List removed!");
+                command.ReplyToCommand($"{pluginPrefix} {ChatColors.Green}List removed!");
             }
             catch (Exception ex)
             {
@@ -384,7 +337,15 @@ namespace SharpTimerWallLists
                 {
                     try
                     {
-                        var topList = await GetTopPlayersAsync(Config.TopCount, listType, mapName);
+                        int topCount = listType switch
+                        {
+                            ListType.Points => Config.PointsCount,
+                            ListType.Times => Config.TimesCount,
+                            ListType.Completions => Config.CompletionsCount,
+                            _ => throw new ArgumentException("Invalid list type")
+                        };
+
+                        var topList = await GetTopPlayersAsync(topCount, listType, mapName);
                         var linesList = GetTopListTextLines(topList, listType);
 
                         Server.NextWorldUpdate(() =>
@@ -402,7 +363,7 @@ namespace SharpTimerWallLists
                                         if (listType == ListType.Points)
                                             _currentPointsList.Add(messageID);
                                         else if (listType == ListType.Times)
-                                            _currentMapList.Add(messageID);
+                                            _currentTimesList.Add(messageID);
                                         else if (listType == ListType.Completions)
                                             _currentCompletionsList.Add(messageID);
                                     }
@@ -470,9 +431,9 @@ namespace SharpTimerWallLists
             {
                 try
                 {
-                    var pointsTopList = await GetTopPlayersAsync(Config.TopCount, ListType.Points, mapName);
-                    var timesTopList = await GetTopPlayersAsync(Config.TopCount, ListType.Times, mapName);
-                    var completionsTopList = await GetTopPlayersAsync(Config.TopCount, ListType.Completions, mapName);
+                    var timesTopList = await GetTopPlayersAsync(Config.TimesCount, ListType.Times, mapName);
+                    var pointsTopList = await GetTopPlayersAsync(Config.PointsCount, ListType.Points, mapName);
+                    var completionsTopList = await GetTopPlayersAsync(Config.CompletionsCount, ListType.Completions, mapName);
 
                     var pointsLinesList = GetTopListTextLines(pointsTopList, ListType.Points);
                     var timesLinesList = GetTopListTextLines(timesTopList, ListType.Times);
@@ -486,7 +447,7 @@ namespace SharpTimerWallLists
                             if (checkAPI != null)
                             {
                                 _currentPointsList.ForEach(id => checkAPI.UpdateWorldText(id, pointsLinesList));
-                                _currentMapList.ForEach(id => checkAPI.UpdateWorldText(id, timesLinesList));
+                                _currentTimesList.ForEach(id => checkAPI.UpdateWorldText(id, timesLinesList));
                                 _currentCompletionsList.ForEach(id => checkAPI.UpdateWorldText(id, completionsLinesList));
                             }
                         }
@@ -632,6 +593,7 @@ namespace SharpTimerWallLists
 
             return linesList;
         }
+
         public static string FormatTime(int ticks)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(ticks / 64.0);
@@ -646,233 +608,6 @@ namespace SharpTimerWallLists
 
             return $"{totalMinutes:D1}:{timeSpan.Seconds:D2}.{milliseconds}";
         }
-
-        public async Task<List<PlayerPlace>> GetTopPlayersAsync(int topCount, ListType listType, string mapName)
-        {
-            string query;
-            string tablePrefix = Config.DatabaseSettings.TablePrefix;
-            string RecordStyle = Config.RecordStyle;
-
-            if (Config.DatabaseType == 1) // MySQL
-            {
-                query = listType switch
-                {
-                    ListType.Points => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            GlobalPoints,
-                            DENSE_RANK() OVER (ORDER BY GlobalPoints DESC) AS playerPlace
-                        FROM {tablePrefix}PlayerStats
-                    )
-                    SELECT SteamID, PlayerName, GlobalPoints, playerPlace
-                    FROM RankedPlayers
-                    ORDER BY GlobalPoints DESC
-                    LIMIT @TopCount",
-
-                    ListType.Times => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            TimerTicks,
-                            DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
-                        FROM {tablePrefix}PlayerRecords
-                        WHERE MapName = @MapName AND Style = {RecordStyle}
-                    )
-                    SELECT SteamID, PlayerName, TimerTicks, playerPlace
-                    FROM RankedPlayers
-                    ORDER BY TimerTicks ASC
-                    LIMIT @TopCount",
-
-                    ListType.Completions => $@"
-                    WITH CompletionCounts AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            COUNT(DISTINCT MapName) AS Completions
-                        FROM {tablePrefix}PlayerRecords
-                        WHERE MapName NOT LIKE '%bonus%'
-                        GROUP BY SteamID, PlayerName
-                    )
-                    SELECT SteamID, PlayerName, Completions
-                    FROM CompletionCounts
-                    ORDER BY Completions DESC
-                    LIMIT @TopCount",
-
-                    _ => throw new ArgumentException("Invalid list type")
-                };
-
-                try
-                {
-                    using var connection = new MySqlConnection(_connectionString);
-                    object parameters = listType switch
-                    {
-                        ListType.Points => new { TopCount = topCount },
-                        ListType.Completions => new { TopCount = topCount },
-                        ListType.Times => new { TopCount = topCount, MapName = mapName },
-                        _ => throw new ArgumentException("Invalid list type")
-                    };
-
-                    return (await connection.QueryAsync<PlayerPlace>(query, parameters)).ToList();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"Failed to retrieve top players from MySQL for {listType}, please check your database credentials in the config");
-                    return new List<PlayerPlace>();
-                }
-            }
-
-            else if (Config.DatabaseType == 2) // SQLite
-            {
-                query = listType switch
-                {
-                    ListType.Points => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            GlobalPoints,
-                            DENSE_RANK() OVER (ORDER BY GlobalPoints DESC) AS playerPlace
-                        FROM {tablePrefix}PlayerStats
-                    )
-                    SELECT SteamID, PlayerName, GlobalPoints, playerPlace
-                    FROM RankedPlayers
-                    ORDER BY GlobalPoints DESC
-                    LIMIT @TopCount",
-
-                    ListType.Times => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            TimerTicks,
-                            DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
-                        FROM {tablePrefix}PlayerRecords
-                        WHERE MapName = @MapName AND Style = {RecordStyle}
-                    )
-                    SELECT SteamID, PlayerName, TimerTicks, playerPlace
-                    FROM RankedPlayers
-                    ORDER BY TimerTicks ASC
-                    LIMIT @TopCount",
-
-                    ListType.Completions => $@"
-                    WITH CompletionCounts AS (
-                        SELECT
-                            SteamID,
-                            PlayerName,
-                            COUNT(DISTINCT MapName) AS Completions
-                        FROM {tablePrefix}PlayerRecords
-                        WHERE MapName NOT LIKE '%bonus%'
-                        GROUP BY SteamID, PlayerName
-                    )
-                    SELECT SteamID, PlayerName, Completions
-                    FROM CompletionCounts
-                    ORDER BY Completions DESC
-                    LIMIT @TopCount",
-
-                    _ => throw new ArgumentException("Invalid list type")
-                };
-
-                try
-                {
-                    using var connection = new SQLiteConnection(_connectionString);
-                    connection.Open();
-                        object parameters = listType switch
-                        {
-                            ListType.Points => new { TopCount = topCount },
-                            ListType.Times => new { TopCount = topCount, MapName = mapName },
-                            ListType.Completions => new { TopCount = topCount },
-                            _ => throw new ArgumentException("Invalid list type")
-                        };
-
-                        return (await connection.QueryAsync<PlayerPlace>(query, parameters)).ToList();
-                }
-                catch (Exception)
-                {
-                    return new List<PlayerPlace>();
-                }
-            }
-
-            else if (Config.DatabaseType == 3) // PostgreSQL
-            {
-                query = listType switch
-                {
-                    ListType.Points => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            ""SteamID"",
-                            ""PlayerName"",
-                            ""GlobalPoints"",
-                            DENSE_RANK() OVER (ORDER BY ""GlobalPoints"" DESC) AS playerPlace
-                        FROM ""{tablePrefix}PlayerStats""
-                    )
-                    SELECT ""SteamID"", ""PlayerName"", ""GlobalPoints"", playerPlace
-                    FROM RankedPlayers
-                    ORDER BY ""GlobalPoints"" DESC
-                    LIMIT @TopCount",
-
-                    ListType.Times => $@"
-                    WITH RankedPlayers AS (
-                        SELECT
-                            ""SteamID"",
-                            ""PlayerName"",
-                            ""TimerTicks"",
-                            DENSE_RANK() OVER (ORDER BY ""TimerTicks"" ASC) AS playerPlace
-                        FROM ""{tablePrefix}PlayerRecords""
-                        WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}
-                    )
-                    SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", playerPlace
-                    FROM RankedPlayers
-                    ORDER BY ""TimerTicks"" ASC
-                    LIMIT @TopCount",
-
-                    ListType.Completions => $@"
-                    WITH CompletionCounts AS (
-                        SELECT
-                            ""SteamID"",
-                            ""PlayerName"",
-                            COUNT(DISTINCT ""MapName"") AS Completions
-                        FROM ""{tablePrefix}PlayerRecords""
-                        WHERE ""MapName"" NOT LIKE '%bonus%'
-                        GROUP BY ""SteamID"", ""PlayerName""
-                    )
-                    SELECT ""SteamID"", ""PlayerName"", Completions
-                    FROM CompletionCounts
-                    JOIN ""{tablePrefix}PlayerRecords"" USING (SteamID)
-                    ORDER BY Completions DESC
-                    LIMIT @TopCount",
-
-                    _ => throw new ArgumentException("Invalid list type")
-                };
-
-                try
-                {
-                    using var connection = new NpgsqlConnection(_connectionString);
-                    object parameters = listType switch
-                    {
-                        ListType.Points => new { TopCount = topCount },
-                        ListType.Times => new { TopCount = topCount, MapName = mapName },
-                        ListType.Completions => new { TopCount = topCount },
-                        _ => throw new ArgumentException("Invalid list type")
-                    };
-
-                    return (await connection.QueryAsync<PlayerPlace>(query, parameters)).ToList();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, $"Failed to retrieve top players from PostgreSQL for {listType}, please check your database credentials in the config");
-                    return new List<PlayerPlace>();
-                }
-            }
-            else
-            {
-                Logger.LogError("Invalid DatabaseType specified in config");
-                return new List<PlayerPlace>();
-            }
-        }
-
     }
 
     public enum ListType
@@ -888,15 +623,6 @@ namespace SharpTimerWallLists
         public int GlobalPoints { get; set; }
         public int TimerTicks { get; set; }
         public int Completions { get; set; }
-    }
-
-    public static class DefaultCommandNames
-    {
-        public const string PointsListCommand = "pointslist";
-        public const string TimesListCommand = "timeslist";
-        public const string CompletionsListCommand = "completionslist";
-        public const string RemoveListCommand = "removelist";
-        public const string CommandPermission = "@css/root";
     }
 
     public class WorldTextData
