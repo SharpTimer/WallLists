@@ -6,7 +6,7 @@
   <h1 align="center">SharpTimer Wall Lists</h1>
   <a align="center">Provides three lists to display on the map: Times List, Points List, Completions List.<br>Dynamically updates on either map start or a given interval. Supports <a href="https://github.com/Kandru/cs2-update-manager">automatic updates</a>.</a><br>
   <br>
-  <img src="https://files.catbox.moe/mjhgo0.png" alt="" style="margin: 0;">
+  <img src="https://github.com/user-attachments/assets/7f91b9c2-297a-48ce-8380-c4583aaf12af" alt="" style="margin: 0;">
 
   <p align="center">
     <br />
