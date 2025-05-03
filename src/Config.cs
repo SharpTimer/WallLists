@@ -5,6 +5,8 @@ namespace SharpTimerWallLists
 {
     public class PluginConfig : BasePluginConfig
     {
+        [JsonPropertyName("SaveToDb")]
+        public bool SaveToDb { get; set; } = false; 
         [JsonPropertyName("DatabaseType")]
         public int DatabaseType { get; set; } = 1; // 1 = MySQL, 2 = SQLite. 3 = Postgres
         [JsonPropertyName("DatabaseSettings")]
@@ -75,16 +77,16 @@ namespace SharpTimerWallLists
         /////////////////////////////////////////////////////////////////////////////////
 
         [JsonPropertyName("TimesListCommand")]
-        public string TimesListCommand { get; set; } = "timeslist";
+        public string TimesListCommand { get; set; } = "tlist";
        
         [JsonPropertyName("PointsListCommand")]
-        public string PointsListCommand { get; set; } = "pointslist";
+        public string PointsListCommand { get; set; } = "plist";
 
         [JsonPropertyName("CompletionsListCommand")]
-        public string CompletionsListCommand { get; set; } = "completionslist";
+        public string CompletionsListCommand { get; set; } = "clist";
 
         [JsonPropertyName("RemoveListCommand")]
-        public string RemoveListCommand { get; set; } = "removelist";
+        public string RemoveListCommand { get; set; } = "rlist";
 
         [JsonPropertyName("ReloadConfigCommand")]
         public string ReloadConfigCommand { get; set; } = "reloadlistcfg";
@@ -110,7 +112,7 @@ namespace SharpTimerWallLists
         public bool AutoUpdateConfig { get; set; } = false;
 
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 5;
+        public override int Version { get; set; } = 6;
     }
 
     public sealed class DatabaseSettings

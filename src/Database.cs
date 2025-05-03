@@ -5,6 +5,7 @@ using Dapper;
 using MySqlConnector;
 using System.Data.SQLite;
 using Npgsql;
+using System.Data;
 
 namespace SharpTimerWallLists
 {
@@ -47,6 +48,40 @@ namespace SharpTimerWallLists
                 };
                 _connectionString = $"Host={dbSettings.Host};Port={dbSettings.Port};Database={dbSettings.Database};Username={dbSettings.Username};Password={dbSettings.Password};SslMode={npgSqlSslMode};";
             }
+        }
+
+        private IDbConnection CreateDbConnection()
+        {
+            return Config.DatabaseType switch
+            {
+                1 => new MySqlConnection(_connectionString!),
+                2 => new SQLiteConnection(_connectionString!),
+                3 => new NpgsqlConnection(_connectionString!),
+                _ => throw new ArgumentException("Invalid DatabaseType")
+            };
+        }
+
+        private async Task<bool> HasEmptyDbSlot(string mapName, ListType listType)
+        {
+            string table = $"{Config.DatabaseSettings.TablePrefix}st_lists";
+            using var conn = CreateDbConnection();
+
+            var rec = await conn.QueryFirstOrDefaultAsync<StListRecord>(
+                $@"SELECT Location1,Location2,Location3,Location4
+                FROM {table}
+                WHERE MapName = @m AND ListType = @t;",
+                new { m = mapName, t = listType.ToString() }
+            );
+
+            if (rec == null)
+                return true;
+
+            if (string.IsNullOrEmpty(rec.Location1)) return true;
+            if (string.IsNullOrEmpty(rec.Location2)) return true;
+            if (string.IsNullOrEmpty(rec.Location3)) return true;
+            if (string.IsNullOrEmpty(rec.Location4)) return true;
+
+            return false;
         }
 
         public async Task<List<PlayerPlace>> GetTopPlayersAsync(int topCount, ListType listType, string mapName)
@@ -274,6 +309,5 @@ namespace SharpTimerWallLists
                 return new List<PlayerPlace>();
             }
         }
-
     }
 }
