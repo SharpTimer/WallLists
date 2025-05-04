@@ -19,7 +19,7 @@ namespace SharpTimerWallLists
             var dbSettings = Config.DatabaseSettings;
             if (Config.DatabaseType == 1)
             {
-                var mySqlSslMode = dbSettings.Sslmode.ToLower() switch
+                var mySqlSslMode = dbSettings.SslMode.ToLower() switch
                 {
                     "none" => MySqlSslMode.None,
                     "preferred" => MySqlSslMode.Preferred,
@@ -37,7 +37,7 @@ namespace SharpTimerWallLists
             }
             else if (Config.DatabaseType == 3)
             {
-                var npgSqlSslMode = dbSettings.Sslmode.ToLower() switch
+                var npgSqlSslMode = dbSettings.SslMode.ToLower() switch
                 {
                     "disable" => SslMode.Disable,
                     "require" => SslMode.Require,
