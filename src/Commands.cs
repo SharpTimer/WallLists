@@ -16,7 +16,7 @@ namespace SharpTimerWallLists
         {
             if (player == null || command == null) return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (!AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;
@@ -29,7 +29,7 @@ namespace SharpTimerWallLists
         {
             if (player == null || command == null) return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (!AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;
@@ -42,7 +42,7 @@ namespace SharpTimerWallLists
         {
             if (player == null || command == null) return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (!AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;
@@ -55,7 +55,7 @@ namespace SharpTimerWallLists
         {
             if (player == null || command == null) return;
 
-            if (!AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (!AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;
@@ -74,7 +74,7 @@ namespace SharpTimerWallLists
         public void OnImportLists(CCSPlayerController? player, CommandInfo? command)
         {
             if (player == null || command == null) return;
-            if (!AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (!AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have permission to execute this command.");
                 return;
@@ -177,7 +177,7 @@ namespace SharpTimerWallLists
 
         public void ReloadConfigCommand(CCSPlayerController? player, CommandInfo? command)
         {
-            if (player != null && !AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (player != null && !AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command?.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;
@@ -196,7 +196,7 @@ namespace SharpTimerWallLists
 
         public void UpdateConfigCommand(CCSPlayerController? player, CommandInfo? command)
         {
-            if (player != null && !AdminManager.PlayerHasPermissions(player, Config.CommandPermission))
+            if (player != null && !AdminManager.PlayerHasPermissions(player, Permission))
             {
                 command?.ReplyToCommand($"{pluginPrefix} {ChatColors.LightRed}You do not have the correct permission to execute this command.");
                 return;

@@ -30,6 +30,9 @@ namespace SharpTimerWallLists
         private List<int> _currentCompletionsList = new();
 
         public string pluginPrefix = $" {ChatColors.Magenta}[{ChatColors.LightPurple}Wall-Lists{ChatColors.Magenta}]";
+        private string Permission => Config.Commands.CommandPermission;
+        private TextSettings Text => Config.TextSettings;
+        private ListSettings List => Config.ListSettings;
 
         public void OnConfigParsed(PluginConfig config)
         {
@@ -88,12 +91,12 @@ namespace SharpTimerWallLists
                     LoadWorldTextFromJson(Server.MapName);
             });
 
-            AddCommand($"css_{Config.TimesListCommand}", "Sets up the map times list", OnTimesListAdd);
-            AddCommand($"css_{Config.PointsListCommand}", "Sets up the points list", OnPointsListAdd);
-            AddCommand($"css_{Config.CompletionsListCommand}", "Sets up the map completions list", OnCompletionsListAdd);
-            AddCommand($"css_{Config.RemoveListCommand}", "Removes the closest list (100 units max)", OnRemoveList);
-            AddCommand($"css_{Config.ReloadConfigCommand}", "Reloads the config file", ReloadConfigCommand);
-            AddCommand($"css_{Config.UpdateConfigCommand}", "Updates the config to the latest version", UpdateConfigCommand);
+            AddCommand($"css_{Config.Commands.TimesListCommand}", "Sets up the map times list", OnTimesListAdd);
+            AddCommand($"css_{Config.Commands.PointsListCommand}", "Sets up the points list", OnPointsListAdd);
+            AddCommand($"css_{Config.Commands.CompletionsListCommand}", "Sets up the map completions list", OnCompletionsListAdd);
+            AddCommand($"css_{Config.Commands.RemoveListCommand}", "Removes the closest list (100 units max)", OnRemoveList);
+            AddCommand($"css_{Config.Commands.ReloadConfigCommand}", "Reloads the config file", ReloadConfigCommand);
+            AddCommand($"css_{Config.Commands.UpdateConfigCommand}", "Updates the config to the latest version", UpdateConfigCommand);
             AddCommand("css_importwalllists", "Imports any existing JSON list locations into the database", OnImportLists);
 
             if (Config.TimeBasedUpdate)
@@ -179,9 +182,9 @@ namespace SharpTimerWallLists
                     
                     int topCount = listType switch
                     {
-                        ListType.Points => Config.PointsCount,
-                        ListType.Times => Config.TimesCount,
-                        ListType.Completions => Config.CompletionsCount,
+                        ListType.Points => List.PointsCount,
+                        ListType.Times => List.TimesCount,
+                        ListType.Completions => List.CompletionsCount,
                         _ => throw new ArgumentException("Invalid list type")
                     };
 
@@ -245,10 +248,10 @@ namespace SharpTimerWallLists
 
                 var filename = listType switch
                 {
-                    ListType.Times => $"{mapName}_timeslist.json",
-                    ListType.Points => $"{mapName}_pointslist.json",
-                    ListType.Completions => $"{mapName}_completionslist.json",
-                    _ => throw new ArgumentException("Invalid list type")
+                    ListType.Times          => $"{mapName}_timeslist.json",
+                    ListType.Points         => $"{mapName}_pointslist.json",
+                    ListType.Completions    => $"{mapName}_completionslist.json",
+                    _                       => throw new ArgumentException("Invalid list type")
                 };
                 var path = Path.Combine(mapsDirectory, filename);
 
@@ -635,10 +638,10 @@ namespace SharpTimerWallLists
                     {
                         int topCount = listType switch
                         {
-                            ListType.Points => Config.PointsCount,
-                            ListType.Times => Config.TimesCount,
-                            ListType.Completions => Config.CompletionsCount,
-                            _ => throw new ArgumentException("Invalid list type")
+                            ListType.Points         => List.PointsCount,
+                            ListType.Times          => List.TimesCount,
+                            ListType.Completions    => List.CompletionsCount,
+                            _                       => throw new ArgumentException("Invalid list type")
                         };
 
                         var topList = await GetTopPlayersAsync(topCount, listType, mapName);
@@ -688,10 +691,10 @@ namespace SharpTimerWallLists
                     // Determine how many entries we need
                     int topCount = listType switch
                     {
-                        ListType.Points       => Config.PointsCount,
-                        ListType.Times        => Config.TimesCount,
-                        ListType.Completions  => Config.CompletionsCount,
-                        _ => throw new ArgumentException("Invalid list type")
+                        ListType.Points       => List.PointsCount,
+                        ListType.Times        => List.TimesCount,
+                        ListType.Completions  => List.CompletionsCount,
+                        _                     => throw new ArgumentException("Invalid list type")
                     };
 
                     // Fetch the data
@@ -776,32 +779,32 @@ namespace SharpTimerWallLists
             {
                 string alignment = listType switch
                 {
-                    ListType.Points => Config.PointsTextAlignment.ToLower(),
-                    ListType.Times => Config.TimesTextAlignment.ToLower(),
-                    ListType.Completions => Config.CompletionsTextAlignment.ToLower(),
-                    _ => "center"
+                    ListType.Points         => List.PointsTextAlignment.ToLower(),
+                    ListType.Times          => List.TimesTextAlignment.ToLower(),
+                    ListType.Completions    => List.CompletionsTextAlignment.ToLower(),
+                    _                       => "center"
                 };
 
                 return alignment switch
                 {
-                    "left" => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT,
-                    "center" => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER,
-                    _ => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER
+                    "left"      => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT,
+                    "center"    => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER,
+                    _           => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER
                 };
             }
 
-            int maxNameLength = Config.MaxNameLength;
+            int maxNameLength = Text.MaxNameLength;
             var linesList = new List<TextLine>();
 
             if (listType == ListType.Points)
             {
                 linesList.Add(new TextLine
                 {
-                    Text = Config.PointsTitleText,
-                    Color = ParseColor(Config.TitleTextColor),
-                    FontSize = Config.TitleFontSize,
+                    Text = List.PointsTitleText,
+                    Color = ParseColor(Text.TitleTextColor),
+                    FontSize = Text.TitleFontSize,
                     FullBright = true,
-                    Scale = Config.TitleTextScale,
+                    Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
 
                 });
@@ -810,11 +813,11 @@ namespace SharpTimerWallLists
             {
                 linesList.Add(new TextLine
                 {
-                    Text = Config.TimesTitleText,
-                    Color = ParseColor(Config.TitleTextColor),
-                    FontSize = Config.TitleFontSize,
+                    Text = List.TimesTitleText,
+                    Color = ParseColor(Text.TitleTextColor),
+                    FontSize = Text.TitleFontSize,
                     FullBright = true,
-                    Scale = Config.TitleTextScale,
+                    Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
 
                 });
@@ -823,11 +826,11 @@ namespace SharpTimerWallLists
             {
                 linesList.Add(new TextLine
                 {
-                    Text = Config.CompletionsTitleText,
-                    Color = ParseColor(Config.TitleTextColor),
-                    FontSize = Config.TitleFontSize,
+                    Text = List.CompletionsTitleText,
+                    Color = ParseColor(Text.TitleTextColor),
+                    FontSize = Text.TitleFontSize,
                     FullBright = true,
-                    Scale = Config.TitleTextScale,
+                    Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
 
                 });
@@ -839,18 +842,18 @@ namespace SharpTimerWallLists
                 var truncatedName = TruncateString(topplayer.PlayerName, maxNameLength);
                 var color = i switch
                 {
-                    0 => ParseColor(Config.FirstPlaceColor),
-                    1 => ParseColor(Config.SecondPlaceColor),
-                    2 => ParseColor(Config.ThirdPlaceColor),
-                    _ => ParseColor(Config.DefaultColor)
+                    0 => ParseColor(Text.FirstPlaceColor),
+                    1 => ParseColor(Text.SecondPlaceColor),
+                    2 => ParseColor(Text.ThirdPlaceColor),
+                    _ => ParseColor(Text.DefaultColor)
                 };
 
                     var pointsOrTimeOrCompletions = listType switch
                     {
-                        ListType.Points => topplayer.GlobalPoints.ToString(),
-                        ListType.Times => FormatTime(topplayer.TimerTicks),
-                        ListType.Completions => topplayer.Completions.ToString(),
-                        _ => string.Empty
+                        ListType.Points         => topplayer.GlobalPoints.ToString(),
+                        ListType.Times          => FormatTime(topplayer.TimerTicks),
+                        ListType.Completions    => topplayer.Completions.ToString(),
+                        _                       => string.Empty
                     };
                 var lineText = $"{i + 1}. {truncatedName} - {pointsOrTimeOrCompletions}";
 
@@ -858,9 +861,9 @@ namespace SharpTimerWallLists
                 {
                     Text = lineText,
                     Color = color,
-                    FontSize = Config.ListFontSize,
+                    FontSize = Text.ListFontSize,
                     FullBright = true,
-                    Scale = Config.ListTextScale,
+                    Scale = Text.ListTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
 
                 });
@@ -904,9 +907,9 @@ namespace SharpTimerWallLists
             {
                 try
                 {
-                    var timesTopList       = await GetTopPlayersAsync(Config.TimesCount,       ListType.Times,       mapName);
-                    var pointsTopList      = await GetTopPlayersAsync(Config.PointsCount,      ListType.Points,      mapName);
-                    var completionsTopList = await GetTopPlayersAsync(Config.CompletionsCount, ListType.Completions, mapName);
+                    var timesTopList       = await GetTopPlayersAsync(List.TimesCount,       ListType.Times,       mapName);
+                    var pointsTopList      = await GetTopPlayersAsync(List.PointsCount,      ListType.Points,      mapName);
+                    var completionsTopList = await GetTopPlayersAsync(List.CompletionsCount, ListType.Completions, mapName);
 
                     var pointsLinesList      = GetTopListTextLines(pointsTopList,      ListType.Points);
                     var timesLinesList       = GetTopListTextLines(timesTopList,       ListType.Times);
