@@ -72,7 +72,7 @@ namespace SharpTimerWallLists
                 string table = "st_lists";
                 using var conn = CreateDbConnection();
                 conn.Execute($@"
-                    CREATE TABLE IF NOT EXISTS `{table}` (
+                    CREATE TABLE IF NOT EXISTS {table} (
                         MapName     VARCHAR(255) NOT NULL,
                         ListType    VARCHAR(50)  NOT NULL,
                         Location1   TEXT,
