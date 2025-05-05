@@ -187,6 +187,7 @@ namespace SharpTimerWallLists
             {
                 Config.Reload();
                 command?.ReplyToCommand($"{pluginPrefix} {ChatColors.Lime}Configuration reloaded successfully!");
+                UpdateLists();
             }
             catch (Exception ex)
             {
