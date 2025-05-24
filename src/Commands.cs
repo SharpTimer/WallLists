@@ -91,9 +91,10 @@ namespace SharpTimerWallLists
                     return;
                 }
 
-                var importQueue   = new List<ImportEntry>();
-                int filesTouched  = 0;
+                var importQueue  = new List<ImportEntry>();
+                int filesTouched = 0;
 
+                // Build importQueue
                 foreach (var filePath in Directory.GetFiles(mapsDir, "*.json"))
                 {
                     var fileName = Path.GetFileName(filePath);
@@ -118,7 +119,7 @@ namespace SharpTimerWallLists
                     string mapName = fileName[..^suffix.Length];
 
                     // Read & deserialize
-                    string json = await File.ReadAllTextAsync(filePath);
+                    var json = await File.ReadAllTextAsync(filePath);
                     var data = JsonSerializer.Deserialize<List<WorldTextData>>(json);
                     if (data == null || data.Count == 0) 
                         continue;
@@ -153,24 +154,39 @@ namespace SharpTimerWallLists
                     }
                 }
 
-                // Construct Vectors/QAngles
+                // Write to DB after getting coords list
                 Server.NextFrame(() =>
                 {
-                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Queued {importQueue.Count} entries from {filesTouched} files for import.");
-                    foreach (var e in importQueue)
+                    if (importQueue.Count == 0)
                     {
-                        var loc = new Vector(e.X, e.Y, e.Z);
-                        var rot = new QAngle(e.Pitch, e.Yaw, e.Roll);
-                        _ = SaveFirstAvailableSlotToDb(e.MapName, e.Type, loc, rot);
+                        player.PrintToChat($"{pluginPrefix} {ChatColors.Red}Nothing to import.");
+                        return;
                     }
 
-                    // Show the imported lists in the world, and notify of completion
-                    Server.NextFrame(() =>
+                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Queued {importQueue.Count} entries from {filesTouched} files for import.");
+
+                    // For each (map + list type) pair, import up to 4 list cords
+                    foreach (var mapTypeGroup in importQueue.GroupBy(e => (e.MapName, e.Type)))
                     {
-                        RefreshLists();
-                        UpdateLists();
-                        player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Database import completed!");
-                    });
+                        foreach (var e in mapTypeGroup.Take(4))
+                        {
+                            var loc = new Vector(e.X, e.Y, e.Z);
+                            var rot = new QAngle(e.Pitch, e.Yaw, e.Roll);
+                            try
+                            {
+                                SaveFirstAvailableSlotToDb(e.MapName, e.Type, loc, rot).GetAwaiter().GetResult();
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogError($"[Wall-Lists] Failed import {e.MapName}/{e.Type}: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    // Refresh the lists from the new source (db)
+                    RefreshLists();
+                    UpdateLists();
+                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Database import completed!");
                 });
             });
         }
