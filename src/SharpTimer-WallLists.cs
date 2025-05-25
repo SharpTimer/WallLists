@@ -440,7 +440,7 @@ namespace SharpTimerWallLists
 
                         float dist = CheckDistance(fx, fy, fz, atPosition);
 
-                        if (dist < bestDist && dist <= 100f)
+                        if (dist < bestDist && dist <= 200f)
                         {
                             bestDist = dist;
                             bestType = type;
@@ -453,7 +453,7 @@ namespace SharpTimerWallLists
                 if (bestType == null)
                 {
                     Server.NextFrame(() =>
-                        player.PrintToChat($"{pluginPrefix} {ChatColors.LightRed}No list within 100 units to remove.")
+                        player.PrintToChat($"{pluginPrefix} {ChatColors.LightRed}No list within 200 units to remove.")
                     );
                     return false;
                 }
@@ -553,7 +553,7 @@ namespace SharpTimerWallLists
 
                         float dist = CheckDistance(fx, fy, fz, atPosition);
 
-                        if (dist < bestDist && dist <= 100f)
+                        if (dist < bestDist && dist <= 200f)
                         {
                             bestDist  = dist;
                             bestType  = type;
@@ -567,7 +567,7 @@ namespace SharpTimerWallLists
                 if (bestType == null || bestData == null)
                 {
                     Server.NextFrame(() =>
-                        player.PrintToChat($"{pluginPrefix} {ChatColors.LightRed}No list within 100 units to remove.")
+                        player.PrintToChat($"{pluginPrefix} {ChatColors.LightRed}No list within 200 units to remove.")
                     );
                     return false;
                 }
