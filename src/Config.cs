@@ -7,11 +7,72 @@ namespace SharpTimerWallLists
     {
         [JsonPropertyName("DatabaseType")]
         public int DatabaseType { get; set; } = 1; // 1 = MySQL, 2 = SQLite. 3 = Postgres
+
         [JsonPropertyName("DatabaseSettings")]
         public DatabaseSettings DatabaseSettings { get; set; } = new DatabaseSettings();
 
         /////////////////////////////////////////////////////////////////////////////////
+        
+        [JsonPropertyName("ListSettings")]
+        public ListSettings ListSettings { get; set; } = new ListSettings();
 
+        /////////////////////////////////////////////////////////////////////////////////
+
+        [JsonPropertyName("TextSettings")]
+        public TextSettings TextSettings { get; set; } = new TextSettings();
+
+        /////////////////////////////////////////////////////////////////////////////////
+
+        [JsonPropertyName("Commands")]
+        public Commands Commands { get; set; } = new Commands();
+
+        /////////////////////////////////////////////////////////////////////////////////
+
+        [JsonPropertyName("TimeBasedUpdate")]
+        public bool TimeBasedUpdate { get; set; } = false;
+
+        [JsonPropertyName("UpdateInterval")]
+        public int UpdateInterval { get; set; } = 300;
+
+        [JsonPropertyName("RecordStyle")]
+        public string RecordStyle { get; set; } = "0";
+
+        [JsonPropertyName("SaveToDb")]
+        public bool SaveToDb { get; set; } = false; 
+
+        [JsonPropertyName("AutoUpdateConfig")]
+        public bool AutoUpdateConfig { get; set; } = false;
+
+        [JsonPropertyName("ConfigVersion")]
+        public override int Version { get; set; } = 6;
+    }
+
+    public sealed class DatabaseSettings
+    {
+        [JsonPropertyName("host")]
+        public string Host { get; set; } = "localhost";
+        
+        [JsonPropertyName("database")]
+        public string Database { get; set; } = "database";
+
+        [JsonPropertyName("username")]
+        public string Username { get; set; } = "user";
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = "password";
+
+        [JsonPropertyName("port")]
+        public int Port { get; set; } = 3306;
+
+        [JsonPropertyName("sslmode")]
+        public string SslMode { get; set; } = "none";
+
+        [JsonPropertyName("table-prefix")]
+        public string TablePrefix { get; set; } = "";
+    }
+
+    public sealed class ListSettings
+    {
         [JsonPropertyName("TimesTitleText")]
         public string TimesTitleText { get; set; } = "|---- Map Times ----|";
 
@@ -21,7 +82,6 @@ namespace SharpTimerWallLists
         [JsonPropertyName("TimesCount")]
         public int TimesCount { get; set; } = 5;
 
-
         [JsonPropertyName("PointsTitleText")]
         public string PointsTitleText { get; set; } = "|--- Points Leaders ---|";
 
@@ -29,7 +89,6 @@ namespace SharpTimerWallLists
         public string PointsTextAlignment { get; set; } = "center";
         [JsonPropertyName("PointsCount")]
         public int PointsCount { get; set; } = 5;
-
 
         [JsonPropertyName("CompletionsTitleText")]
         public string CompletionsTitleText { get; set; } = "|--- Maps Completed ---|";
@@ -39,9 +98,10 @@ namespace SharpTimerWallLists
 
         [JsonPropertyName("CompletionsCount")]
         public int CompletionsCount { get; set; } = 5;
+    }
 
-        /////////////////////////////////////////////////////////////////////////////////
-
+    public sealed class TextSettings
+    {
         [JsonPropertyName("TitleFontSize")]
         public int TitleFontSize { get; set; } = 26;
 
@@ -71,20 +131,21 @@ namespace SharpTimerWallLists
 
         [JsonPropertyName("DefaultColor")]
         public string DefaultColor { get; set; } = "White";
+    }
 
-        /////////////////////////////////////////////////////////////////////////////////
-
+    public sealed class Commands
+    {
         [JsonPropertyName("TimesListCommand")]
-        public string TimesListCommand { get; set; } = "timeslist";
+        public string TimesListCommand { get; set; } = "tlist";
        
         [JsonPropertyName("PointsListCommand")]
-        public string PointsListCommand { get; set; } = "pointslist";
+        public string PointsListCommand { get; set; } = "plist";
 
         [JsonPropertyName("CompletionsListCommand")]
-        public string CompletionsListCommand { get; set; } = "completionslist";
+        public string CompletionsListCommand { get; set; } = "clist";
 
         [JsonPropertyName("RemoveListCommand")]
-        public string RemoveListCommand { get; set; } = "removelist";
+        public string RemoveListCommand { get; set; } = "rlist";
 
         [JsonPropertyName("ReloadConfigCommand")]
         public string ReloadConfigCommand { get; set; } = "reloadlistcfg";
@@ -94,46 +155,5 @@ namespace SharpTimerWallLists
 
         [JsonPropertyName("CommandPermission")]
         public string CommandPermission { get; set; } = "@css/root";
-
-        /////////////////////////////////////////////////////////////////////////////////
-
-        [JsonPropertyName("TimeBasedUpdate")]
-        public bool TimeBasedUpdate { get; set; } = false;
-
-        [JsonPropertyName("UpdateInterval")]
-        public int UpdateInterval { get; set; } = 60;
-
-        [JsonPropertyName("RecordStyle")]
-        public string RecordStyle { get; set; } = "0";
-
-        [JsonPropertyName("AutoUpdateConfig")]
-        public bool AutoUpdateConfig { get; set; } = false;
-
-        [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 5;
-    }
-
-    public sealed class DatabaseSettings
-    {
-        [JsonPropertyName("host")]
-        public string Host { get; set; } = "localhost";
-        
-        [JsonPropertyName("database")]
-        public string Database { get; set; } = "database";
-
-        [JsonPropertyName("username")]
-        public string Username { get; set; } = "user";
-
-        [JsonPropertyName("password")]
-        public string Password { get; set; } = "password";
-
-        [JsonPropertyName("port")]
-        public int Port { get; set; } = 3306;
-
-        [JsonPropertyName("sslmode")]
-        public string Sslmode { get; set; } = "none";
-
-        [JsonPropertyName("table-prefix")]
-        public string TablePrefix { get; set; } = "";
     }
 }
