@@ -154,39 +154,64 @@ namespace SharpTimerWallLists
                     }
                 }
 
+                // Batch upload vars
+                var toProcess = importQueue.GroupBy(e => (e.MapName, e.Type)).SelectMany(g => g.Take(4)).ToList();
+                var queuedCount = importQueue.Count;
+                var processCount = toProcess.Count;
+
                 // Write to DB after getting coords list
                 Server.NextFrame(() =>
                 {
-                    if (importQueue.Count == 0)
+                    if (processCount == 0)
                     {
                         player.PrintToChat($"{pluginPrefix} {ChatColors.Red}Nothing to import.");
                         return;
                     }
 
-                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Queued {importQueue.Count} entries from {filesTouched} files for import.");
+                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Queued {queuedCount} entries from {filesTouched} files for import.");
+
+                    const int ticksPerImport = 4;   // 4 ticks between imports --> ~16 imports/sec
+                    int tickCounter = 0;
+                    int index = 0;
 
                     // For each (map + list type) pair, import up to 4 list cords
-                    foreach (var mapTypeGroup in importQueue.GroupBy(e => (e.MapName, e.Type)))
+                    Action throttleLoop = null!;
+                    throttleLoop = () =>
                     {
-                        foreach (var e in mapTypeGroup.Take(4))
+                        tickCounter++;
+                        if (tickCounter < ticksPerImport)
                         {
-                            var loc = new Vector(e.X, e.Y, e.Z);
-                            var rot = new QAngle(e.Pitch, e.Yaw, e.Roll);
-                            try
-                            {
-                                SaveFirstAvailableSlotToDb(e.MapName, e.Type, loc, rot).GetAwaiter().GetResult();
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.LogError($"[Wall-Lists] Failed import {e.MapName}/{e.Type}: {ex.Message}");
-                            }
+                            Server.NextFrame(throttleLoop);
+                            return;
                         }
-                    }
 
-                    // Refresh the lists from the new source (db)
-                    RefreshLists();
-                    UpdateLists();
-                    player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Database import completed!");
+                        tickCounter = 0;
+                        var e = toProcess[index++];
+                        var loc = new Vector(e.X, e.Y, e.Z);
+                        var rot = new QAngle(e.Pitch, e.Yaw, e.Roll);
+                        try
+                        {
+                            SaveFirstAvailableSlotToDb(e.MapName, e.Type, loc, rot).GetAwaiter().GetResult();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"[Wall-Lists] Failed import {e.MapName}/{e.Type}: {ex.Message}");
+                        }
+
+                        if (index < processCount)
+                        {
+                            Server.NextFrame(throttleLoop);
+                        }
+                        else
+                        {
+                            // Refresh the lists from the new source (db)
+                            RefreshLists();
+                            UpdateLists();
+                            player.PrintToChat($"{pluginPrefix} {ChatColors.Lime}Database import completed!");
+                        }
+                    };
+
+                    Server.NextFrame(throttleLoop);
                 });
             });
         }
