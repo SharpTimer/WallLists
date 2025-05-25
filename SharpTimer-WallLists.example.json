@@ -1,39 +1,51 @@
 // This is an example of the default config. Do not use this file, as // comments are not valid json.
 {
-  "TopCount": 5, // Number of spots on the list
-  "TimeBasedUpdate": false, // true = Updates on UpdateInterval, false = Updates on map change
-  "UpdateInterval": 60, // The number in second between updates
-  "DatabaseType": 1, // 1 = MySQL, 2 = SQLite, 3 = PostgreSQL
+  "DatabaseType": 1,        // 1 = MySQL, 2 = SQLite, 3 = PostgreSQL
   "DatabaseSettings": {
     "host": "localhost",
-    "username": "root",
     "database": "database",
+    "username": "user",
     "password": "password",
     "port": 3306,
     "sslmode": "none",
-    "table-prefix": "" // Empty means you have no prefix (PlayerRecords, PlayerStats). "XX_" means your tables have a prefix (XX_PlayerRecords, XX_PlayerStats)
+    "table-prefix": ""      // Empty means you have no prefix (PlayerRecords, PlayerStats). "XX_" means your tables have a prefix (XX_PlayerRecords, XX_PlayerStats)
   },
-  "PointsTitleText": "|--- Points Leaders ---|", // The title for the list
-  "TimesTitleText": "|---- Map Records ----|", // The title for the list
-  "CompletionsTitleText": "|--- Maps Completed ---|",
-  "TitleFontSize": 26,
-  "TitleTextScale": 0.45,
-  "ListFontSize": 24,
-  "ListTextScale": 0.35,
-  "MaxNameLength": 32,
-  "PointsTextAlignment": "center", // Usage = left, center
-  "TimesTextAlignment": "center", // Usage = left, center
-  "CompletionsTextAlignment": "center", // Usage = left, center
-  "TitleTextColor": "Magenta", 
-  "FirstPlaceColor": "Lime",
-  "SecondPlaceColor": "Coral",
-  "ThirdPlaceColor": "Cyan",
-  "DefaultColor": "White", // The color for any line besides 1. 2. 3.
-  "PointsListCommand": "pointslist", // The command to add a points list, in game use !pointslist
-  "TimesListCommand": "timeslist", // The command to add a times list, in game use !timeslist
-  "CompletionsListCommand": "completionslist", // The command to add a completions list, in game use !completionslist
-  "RemoveListCommand": "removelist", // The command to remove a list, in game use !removelist
-  "CommandPermission": "@css/root", // The permission required to use these commands
-  "RecordStyle": "0", // Set the style you want the be displayed on the times lists, 0 = normal times
-  "ConfigVersion": 4
+  "ListSettings": {
+    "TimesTitleText": "|---- Map Times ----|",          // The title for the list
+    "TimesTextAlignment": "center",                     // Usage = left, center
+    "TimesCount": 5,                                    // Number of spots on the list
+    "PointsTitleText": "|--- Points Leaders ---|",      // The title for the list
+    "PointsTextAlignment": "center",                    // Usage = left, center
+    "PointsCount": 5,                                   // Number of spots on the list
+    "CompletionsTitleText": "|--- Maps Completed ---|", // The title for the list
+    "CompletionsTextAlignment": "center",               // Usage = left, center
+    "CompletionsCount": 5                               // Number of spots on the list
+  },
+  "TextSettings": {
+    "TitleFontSize": 26,
+    "TitleTextScale": 0.45,
+    "ListFontSize": 24,
+    "ListTextScale": 0.35,
+    "MaxNameLength": 32,
+    "TitleTextColor": "Magenta",  // The color of the title (e.g. |---- Map Times ----|)
+    "FirstPlaceColor": "Lime",
+    "SecondPlaceColor": "Coral",
+    "ThirdPlaceColor": "Cyan",
+    "DefaultColor": "White"       // The color for any line besides 1. 2. 3.
+  },
+  "Commands": {
+    "TimesListCommand": "tlist",            // The command to add a times list, in game use !tlist
+    "PointsListCommand": "plist",           // The command to add a points list, in game use !plist
+    "CompletionsListCommand": "clist",      // The command to add a completions list, in game use !clist
+    "RemoveListCommand": "rlist",           // The command to remove the closest list, in game use !rlist
+    "ReloadConfigCommand": "reloadlistcfg", // Reloads the config and refreshes the lists
+    "UpdateConfigCommand": "updatelistcfg", // Updates your cfg to the latest version
+    "CommandPermission": "@css/root"        // The permission required to use these commands
+  },
+  "TimeBasedUpdate": false,   // True = The list will updates if there any ranking changes on an interval set in UpdateInterval. False = Update on map change only
+  "UpdateInterval": 300,      // The interval in seconds in which the list rankings will update
+  "RecordStyle": "0",         // Set the style you want the be displayed on the times lists, 0 = normal times
+  "SaveToDb": false,          // True = save your list coordinates to a database tables named "st_lists". False = save them to a local json in the plugin folder
+  "AutoUpdateConfig": false,  // True = config automatically updates when you update to a new version of the plugin. False = Manually update your config
+  "ConfigVersion": 6
 }
