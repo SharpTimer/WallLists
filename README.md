@@ -10,7 +10,7 @@
 
   <p align="center">
     <br />
-    <a href="https://github.com/SharpTimer/WallLists/releases/tag/1.0.5">Download</a>
+    <a href="https://github.com/SharpTimer/WallLists/releases/tag/1.0.6">Download</a>
   </p>
 </div>
 
@@ -21,7 +21,7 @@
 To use this server addon, you'll need the following dependencies installed:
 
 - [**CounterStrikeSharp**](https://github.com/roflmuffin/CounterStrikeSharp/releases): CounterStrikeSharp allows you to write server plugins in C# for Counter-Strike 2.
-- [**K4-WorldText-API**](https://github.com/K4ryuu/K4-WorldText-API): This is a shared developer API to handle world text.
+- [**K4-WorldText-API**](https://github.com/M-archand/K4-WorldText-API/releases/tag/1.2.4): This is a shared developer API to handle world text.
 - [**SharpTimer**](https://github.com/Letaryat/poor-sharptimer): SharpTimer is a timer plugin for game modes such as Surf or BHOP.
   
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -32,10 +32,10 @@ To use this server addon, you'll need the following dependencies installed:
 
 Default Access: @css/root, can be configured.
 All commands can be configured, these are the default commands:
-- !timeslist  - Create a map records list for the current map in front of the player and save it to a config file.
-- !pointslist - Create a points list in front of the player and save it to a config file.
-- !completionslist - Create a # of map completions list in fron of the player and save it to a config file.
-- !removelist - Remove the closest list from your position. (100 units max)
+- !tlist  - Create a map records list for the current map in front of the player and save it to a config file or database.
+- !plist - Create a points list in front of the player and save it to a config file or database.
+- !clist - Create a # of map completions list in fron of the player and save it to a config file or database.
+- !rlist - Remove the closest list from your position. (200 units max)
 - !reloadlistcfg - Reload your config live in-game. Takes about 15 seconds.
 - !updatelistcfg - Update your config with any new variables that have been added in a new version.
 
@@ -62,13 +62,14 @@ All commands can be configured, these are the default commands:
 - [X] Add left alignment.
 - [X] Add a Map Completions List.
 - [X] Add alignment options for each type of list.
-- [ ] Add minor position adjustment commands.
-- [ ] Add database support for more convenient multi-server maintencance.
+- [X] Add database support for more convenient multi-server maintencance.
+- [ ] Add minor position adjustment menu
+- [ ] Add configurable font
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 > [!IMPORTANT]
-> Credits for the base plugin go to [K4ryuu](https://github.com/K4ryuu)! I made changes for it to work with SharpTimer and added several extra features.
+> Credits for the base plugin go to [K4ryuu](https://github.com/K4ryuu)! I made changes for it to work with SharpTimer and added more functionality.
 
 <!-- LICENSE -->
 
