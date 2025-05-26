@@ -102,6 +102,9 @@ namespace SharpTimerWallLists
 
     public sealed class TextSettings
     {
+        [JsonPropertyName("FontName")]
+        public string FontName { get; set; } = "Arial Bold";
+
         [JsonPropertyName("TitleFontSize")]
         public int TitleFontSize { get; set; } = 26;
 

@@ -789,6 +789,7 @@ namespace SharpTimerWallLists
                 {
                     "left"      => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT,
                     "center"    => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER,
+                    "right"     => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_RIGHT,
                     _           => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER
                 };
             }
@@ -803,6 +804,7 @@ namespace SharpTimerWallLists
                     Text = List.PointsTitleText,
                     Color = ParseColor(Text.TitleTextColor),
                     FontSize = Text.TitleFontSize,
+                    FontName = Config.TextSettings.FontName,
                     FullBright = true,
                     Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
@@ -816,6 +818,7 @@ namespace SharpTimerWallLists
                     Text = List.TimesTitleText,
                     Color = ParseColor(Text.TitleTextColor),
                     FontSize = Text.TitleFontSize,
+                    FontName = Config.TextSettings.FontName,
                     FullBright = true,
                     Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
@@ -829,6 +832,7 @@ namespace SharpTimerWallLists
                     Text = List.CompletionsTitleText,
                     Color = ParseColor(Text.TitleTextColor),
                     FontSize = Text.TitleFontSize,
+                    FontName = Config.TextSettings.FontName,
                     FullBright = true,
                     Scale = Text.TitleTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)
@@ -862,6 +866,7 @@ namespace SharpTimerWallLists
                     Text = lineText,
                     Color = color,
                     FontSize = Text.ListFontSize,
+                    FontName = Config.TextSettings.FontName,
                     FullBright = true,
                     Scale = Text.ListTextScale,
                     JustifyHorizontal = GetTextAlignment(listType)

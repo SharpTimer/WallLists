@@ -12,16 +12,17 @@
   },
   "ListSettings": {
     "TimesTitleText": "|---- Map Times ----|",          // The title for the list
-    "TimesTextAlignment": "center",                     // Usage = left, center
+    "TimesTextAlignment": "center",                     // Usage = left, center, right
     "TimesCount": 5,                                    // Number of spots on the list
     "PointsTitleText": "|--- Points Leaders ---|",      // The title for the list
-    "PointsTextAlignment": "center",                    // Usage = left, center
+    "PointsTextAlignment": "center",                    // Usage = left, center, right
     "PointsCount": 5,                                   // Number of spots on the list
     "CompletionsTitleText": "|--- Maps Completed ---|", // The title for the list
-    "CompletionsTextAlignment": "center",               // Usage = left, center
+    "CompletionsTextAlignment": "center",               // Usage = left, center, right
     "CompletionsCount": 5                               // Number of spots on the list
   },
   "TextSettings": {
+    "FontName": "Arial Bold",   // Examples; Arial, Arial Black, Arial Bold, Arial Narrow, Arial Unicode MS, Comic Sans MS, Courier New, HalfLife2, Lucida Console, MS Shell Dlg 2, Marlett, Stratum2, Tahoma, Times New Roman, Trebuchet MS, Verdana
     "TitleFontSize": 26,
     "TitleTextScale": 0.45,
     "ListFontSize": 24,
