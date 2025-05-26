@@ -89,6 +89,7 @@ namespace SharpTimerWallLists
             string query;
             string tablePrefix = Config.DatabaseSettings.TablePrefix;
             string RecordStyle = Config.RecordStyle;
+            string tableName = $"PlayerStats{(string.IsNullOrEmpty(tablePrefix) ? "" : $"_{tablePrefix}")}";
 
             if (Config.DatabaseType == 1) // MySQL
             {
@@ -101,7 +102,7 @@ namespace SharpTimerWallLists
                             PlayerName,
                             GlobalPoints,
                             DENSE_RANK() OVER (ORDER BY GlobalPoints DESC) AS playerPlace
-                        FROM {tablePrefix}PlayerStats
+                        FROM {tableName}
                     )
                     SELECT SteamID, PlayerName, GlobalPoints, playerPlace
                     FROM RankedPlayers
@@ -115,7 +116,7 @@ namespace SharpTimerWallLists
                             PlayerName,
                             TimerTicks,
                             DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
-                        FROM {tablePrefix}PlayerRecords
+                        FROM PlayerRecords
                         WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
                     SELECT SteamID, PlayerName, TimerTicks, playerPlace
@@ -129,7 +130,7 @@ namespace SharpTimerWallLists
                             SteamID,
                             PlayerName,
                             COUNT(DISTINCT MapName) AS Completions
-                        FROM {tablePrefix}PlayerRecords
+                        FROM PlayerRecords
                         WHERE MapName NOT LIKE '%bonus%'
                         GROUP BY SteamID, PlayerName
                     )
@@ -172,7 +173,7 @@ namespace SharpTimerWallLists
                             PlayerName,
                             GlobalPoints,
                             DENSE_RANK() OVER (ORDER BY GlobalPoints DESC) AS playerPlace
-                        FROM {tablePrefix}PlayerStats
+                        FROM {tableName}
                     )
                     SELECT SteamID, PlayerName, GlobalPoints, playerPlace
                     FROM RankedPlayers
@@ -186,7 +187,7 @@ namespace SharpTimerWallLists
                             PlayerName,
                             TimerTicks,
                             DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
-                        FROM {tablePrefix}PlayerRecords
+                        FROM PlayerRecords
                         WHERE MapName = @MapName AND Style = {RecordStyle}
                     )
                     SELECT SteamID, PlayerName, TimerTicks, playerPlace
@@ -200,7 +201,7 @@ namespace SharpTimerWallLists
                             SteamID,
                             PlayerName,
                             COUNT(DISTINCT MapName) AS Completions
-                        FROM {tablePrefix}PlayerRecords
+                        FROM PlayerRecords
                         WHERE MapName NOT LIKE '%bonus%'
                         GROUP BY SteamID, PlayerName
                     )
@@ -216,15 +217,15 @@ namespace SharpTimerWallLists
                 {
                     using var connection = new SQLiteConnection(_connectionString);
                     connection.Open();
-                        object parameters = listType switch
-                        {
-                            ListType.Points => new { TopCount = topCount },
-                            ListType.Times => new { TopCount = topCount, MapName = mapName },
-                            ListType.Completions => new { TopCount = topCount },
-                            _ => throw new ArgumentException("Invalid list type")
-                        };
+                    object parameters = listType switch
+                    {
+                        ListType.Points => new { TopCount = topCount },
+                        ListType.Times => new { TopCount = topCount, MapName = mapName },
+                        ListType.Completions => new { TopCount = topCount },
+                        _ => throw new ArgumentException("Invalid list type")
+                    };
 
-                        return (await connection.QueryAsync<PlayerPlace>(query, parameters)).ToList();
+                    return (await connection.QueryAsync<PlayerPlace>(query, parameters)).ToList();
                 }
                 catch (Exception)
                 {
@@ -243,7 +244,7 @@ namespace SharpTimerWallLists
                             ""PlayerName"",
                             ""GlobalPoints"",
                             DENSE_RANK() OVER (ORDER BY ""GlobalPoints"" DESC) AS playerPlace
-                        FROM ""{tablePrefix}PlayerStats""
+                        FROM ""{tableName}""
                     )
                     SELECT ""SteamID"", ""PlayerName"", ""GlobalPoints"", playerPlace
                     FROM RankedPlayers
@@ -257,7 +258,7 @@ namespace SharpTimerWallLists
                             ""PlayerName"",
                             ""TimerTicks"",
                             DENSE_RANK() OVER (ORDER BY ""TimerTicks"" ASC) AS playerPlace
-                        FROM ""{tablePrefix}PlayerRecords""
+                        FROM ""PlayerRecords""
                         WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}
                     )
                     SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", playerPlace
@@ -271,13 +272,13 @@ namespace SharpTimerWallLists
                             ""SteamID"",
                             ""PlayerName"",
                             COUNT(DISTINCT ""MapName"") AS Completions
-                        FROM ""{tablePrefix}PlayerRecords""
+                        FROM ""PlayerRecords""
                         WHERE ""MapName"" NOT LIKE '%bonus%'
                         GROUP BY ""SteamID"", ""PlayerName""
                     )
                     SELECT ""SteamID"", ""PlayerName"", Completions
                     FROM CompletionCounts
-                    JOIN ""{tablePrefix}PlayerRecords"" USING (SteamID)
+                    JOIN ""PlayerRecords"" USING (SteamID)
                     ORDER BY Completions DESC
                     LIMIT @TopCount",
 
