@@ -5,6 +5,9 @@ namespace SharpTimerWallLists
 {
     public class PluginConfig : BasePluginConfig
     {
+        [JsonPropertyName("SaveToDb")]
+        public bool SaveToDb { get; set; } = false;
+        
         [JsonPropertyName("DatabaseType")]
         public int DatabaseType { get; set; } = 1; // 1 = MySQL, 2 = SQLite. 3 = Postgres
 
@@ -37,14 +40,14 @@ namespace SharpTimerWallLists
         [JsonPropertyName("RecordStyle")]
         public string RecordStyle { get; set; } = "0";
 
-        [JsonPropertyName("SaveToDb")]
-        public bool SaveToDb { get; set; } = false; 
+        [JsonPropertyName("RemoveDistance")]
+        public float RemoveDistance { get; set; } = 200F;
 
         [JsonPropertyName("AutoUpdateConfig")]
         public bool AutoUpdateConfig { get; set; } = false;
 
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 6;
+        public override int Version { get; set; } = 7;
     }
 
     public sealed class DatabaseSettings
