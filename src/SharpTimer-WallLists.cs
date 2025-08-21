@@ -855,7 +855,7 @@ namespace SharpTimerWallLists
             // Header line with the single big background
             var header = new TextLine
             {
-                Text              = List.TimesTitleText ?? string.Empty,
+                Text              = titleText,
                 Color             = ParseColor(Text.TitleTextColor),
                 FontSize          = Text.TitleFontSize,
                 FontName          = Config.TextSettings.FontName,
