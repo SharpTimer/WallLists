@@ -764,9 +764,10 @@ namespace SharpTimerWallLists
             {
                 try
                 {
-                    var colorProperty = typeof(Color).GetProperty(colorName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static) ?? throw new ArgumentException($"Invalid color name: {colorName}");
-                    var colorValue = colorProperty.GetValue(null) ?? throw new InvalidOperationException($"Color property '{colorName}' has no value.");
-                    return (Color)colorValue;
+                    var prop = typeof(Color).GetProperty(colorName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                            ?? throw new ArgumentException($"Invalid color name: {colorName}");
+                    var val = prop.GetValue(null) ?? throw new InvalidOperationException($"Color '{colorName}' has no value.");
+                    return (Color)val;
                 }
                 catch (Exception ex)
                 {
@@ -775,103 +776,134 @@ namespace SharpTimerWallLists
                 }
             }
 
-            PointWorldTextJustifyHorizontal_t GetTextAlignment(ListType listType)
+            PointWorldTextJustifyHorizontal_t GetTextAlignment(ListType lt)
             {
-                string alignment = listType switch
+                string alignment = lt switch
                 {
-                    ListType.Points         => List.PointsTextAlignment.ToLower(),
-                    ListType.Times          => List.TimesTextAlignment.ToLower(),
-                    ListType.Completions    => List.CompletionsTextAlignment.ToLower(),
-                    _                       => "center"
+                    ListType.Points      => List.PointsTextAlignment.ToLower(),
+                    ListType.Times       => List.TimesTextAlignment.ToLower(),
+                    ListType.Completions => List.CompletionsTextAlignment.ToLower(),
+                    _                    => "center"
                 };
 
                 return alignment switch
                 {
-                    "left"      => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT,
-                    "center"    => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER,
-                    "right"     => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_RIGHT,
-                    _           => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER
+                    "left"   => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT,
+                    "center" => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER,
+                    "right"  => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_RIGHT,
+                    _        => PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER
                 };
+            }
+
+            // Build one row's visible text for measuring and for the actual line
+            string BuildRowText(ListType lt, int index, PlayerPlace p, int maxNameLen)
+            {
+                string name  = TruncateString(p.PlayerName, maxNameLen);
+                string value = lt switch
+                {
+                    ListType.Points      => p.GlobalPoints.ToString(),
+                    ListType.Times       => FormatTime(p.TimerTicks),
+                    ListType.Completions => p.Completions.ToString(),
+                    _                    => string.Empty
+                };
+                return $"{index + 1}. {name} - {value}";
             }
 
             int maxNameLength = Text.MaxNameLength;
             var linesList = new List<TextLine>();
 
-            if (listType == ListType.Points)
+            // Per list type parameters
+            string titleText;
+            int configuredCount;
+            switch (listType)
             {
-                linesList.Add(new TextLine
-                {
-                    Text = List.PointsTitleText,
-                    Color = ParseColor(Text.TitleTextColor),
-                    FontSize = Text.TitleFontSize,
-                    FontName = Config.TextSettings.FontName,
-                    FullBright = true,
-                    Scale = Text.TitleTextScale,
-                    JustifyHorizontal = GetTextAlignment(listType)
+                case ListType.Points:
+                    titleText       = List.PointsTitleText ?? string.Empty;
+                    configuredCount = List.PointsCount;
+                    break;
 
-                });
-            }
-            else if (listType == ListType.Times)
-            {
-                linesList.Add(new TextLine
-                {
-                    Text = List.TimesTitleText,
-                    Color = ParseColor(Text.TitleTextColor),
-                    FontSize = Text.TitleFontSize,
-                    FontName = Config.TextSettings.FontName,
-                    FullBright = true,
-                    Scale = Text.TitleTextScale,
-                    JustifyHorizontal = GetTextAlignment(listType)
+                case ListType.Times:
+                    titleText       = List.TimesTitleText ?? string.Empty;
+                    configuredCount = List.TimesCount;
+                    break;
 
-                });
-            }
-            else if (listType == ListType.Completions)
-            {
-                linesList.Add(new TextLine
-                {
-                    Text = List.CompletionsTitleText,
-                    Color = ParseColor(Text.TitleTextColor),
-                    FontSize = Text.TitleFontSize,
-                    FontName = Config.TextSettings.FontName,
-                    FullBright = true,
-                    Scale = Text.TitleTextScale,
-                    JustifyHorizontal = GetTextAlignment(listType)
+                case ListType.Completions:
+                    titleText       = List.CompletionsTitleText ?? string.Empty;
+                    configuredCount = List.CompletionsCount;
+                    break;
 
-                });
+                default:
+                    titleText       = string.Empty;
+                    configuredCount = 0;
+                    break;
             }
 
-            for (int i = 0; i < topList.Count; i++)
+            int totalLines = Math.Max(0, Math.Min(configuredCount, topList.Count)); // Count how many rows being shown
+
+            // Figure out longest line across title + the info lines
+            int longestLen = titleText.Length;
+            for (int i = 0; i < totalLines; i++)
             {
-                var topplayer = topList[i];
-                var truncatedName = TruncateString(topplayer.PlayerName, maxNameLength);
-                var color = i switch
+                string rowText = BuildRowText(listType, i, topList[i], maxNameLength);
+                if (rowText.Length > longestLen)
+                    longestLen = rowText.Length;
+            }
+
+            // Base 10, then +2 per character above 32
+            //float dynamicBorderWidth = 10.0f + Math.Max(0, longestLen - 32) * 2.0f;
+
+            // Header line with the single big background
+            var header = new TextLine
+            {
+                Text              = List.TimesTitleText ?? string.Empty,
+                Color             = ParseColor(Text.TitleTextColor),
+                FontSize          = Text.TitleFontSize,
+                FontName          = Config.TextSettings.FontName,
+                FullBright        = true,
+                Scale             = Text.TitleTextScale,
+                JustifyHorizontal = GetTextAlignment(listType),
+            };
+
+            // Only add background if enabled in config
+            if (Config.EnableBackground)
+            {
+                header.BackgroundEnabled         = true;
+                header.BackgroundAsSingleBlock   = true;
+                header.BackgroundHideText        = true;
+                header.BackgroundColor           = Color.FromArgb(200, 40, 40, 40);
+                header.BackgroundBorderWidth     = Config.BackgroundWidth;
+                header.BackgroundBorderHeight    = 0.0f;
+                header.BackgroundWorldToUV       = 0.05f;
+                header.BackgroundDepthOffset     = -0.0015f;
+                header.BackgroundMaxCharsPerLine = 32;
+                header.BackgroundWidthInflation  = 1.0f;
+                header.BackgroundPadChars        = 2;
+            }
+
+            linesList.Add(header);
+
+            // Add each line
+            for (int i = 0; i < totalLines; i++)
+            {
+                var p = topList[i];
+                var row = new TextLine
                 {
-                    0 => ParseColor(Text.FirstPlaceColor),
-                    1 => ParseColor(Text.SecondPlaceColor),
-                    2 => ParseColor(Text.ThirdPlaceColor),
-                    _ => ParseColor(Text.DefaultColor)
+                    Text = BuildRowText(listType, i, p, maxNameLength),
+                    Color = i switch
+                    {
+                        0 => ParseColor(Text.FirstPlaceColor),
+                        1 => ParseColor(Text.SecondPlaceColor),
+                        2 => ParseColor(Text.ThirdPlaceColor),
+                        _ => ParseColor(Text.DefaultColor)
+                    },
+                    FontSize          = Text.ListFontSize,
+                    FontName          = Config.TextSettings.FontName,
+                    FullBright        = true,
+                    Scale             = Text.ListTextScale,
+                    JustifyHorizontal = GetTextAlignment(listType),
                 };
 
-                    var pointsOrTimeOrCompletions = listType switch
-                    {
-                        ListType.Points         => topplayer.GlobalPoints.ToString(),
-                        ListType.Times          => FormatTime(topplayer.TimerTicks),
-                        ListType.Completions    => topplayer.Completions.ToString(),
-                        _                       => string.Empty
-                    };
-                var lineText = $"{i + 1}. {truncatedName} - {pointsOrTimeOrCompletions}";
-
-                linesList.Add(new TextLine
-                {
-                    Text = lineText,
-                    Color = color,
-                    FontSize = Text.ListFontSize,
-                    FontName = Config.TextSettings.FontName,
-                    FullBright = true,
-                    Scale = Text.ListTextScale,
-                    JustifyHorizontal = GetTextAlignment(listType)
-
-                });
+                linesList.Add(row);
             }
 
             return linesList;

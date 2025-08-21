@@ -40,6 +40,12 @@ namespace SharpTimerWallLists
         [JsonPropertyName("RecordStyle")]
         public string RecordStyle { get; set; } = "0";
 
+        [JsonPropertyName("EnableBackground")]
+        public bool EnableBackground { get; set; } = true;
+
+        [JsonPropertyName("BackgroundWidth")]
+        public float BackgroundWidth { get; set; } = 30.0F;
+
         [JsonPropertyName("RemoveDistance")]
         public float RemoveDistance { get; set; } = 200F;
 
