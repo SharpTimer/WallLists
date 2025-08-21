@@ -12,16 +12,17 @@
   },
   "ListSettings": {
     "TimesTitleText": "|---- Map Times ----|",          // The title for the list
-    "TimesTextAlignment": "center",                     // Usage = left, center
+    "TimesTextAlignment": "center",                     // Usage = left, center, right
     "TimesCount": 5,                                    // Number of spots on the list
     "PointsTitleText": "|--- Points Leaders ---|",      // The title for the list
-    "PointsTextAlignment": "center",                    // Usage = left, center
+    "PointsTextAlignment": "center",                    // Usage = left, center, right
     "PointsCount": 5,                                   // Number of spots on the list
     "CompletionsTitleText": "|--- Maps Completed ---|", // The title for the list
-    "CompletionsTextAlignment": "center",               // Usage = left, center
+    "CompletionsTextAlignment": "center",               // Usage = left, center, right
     "CompletionsCount": 5                               // Number of spots on the list
   },
   "TextSettings": {
+    "FontName": "Arial Bold",   // Examples; Arial, Arial Black, Arial Bold, Arial Narrow, Arial Unicode MS, Comic Sans MS, Courier New, HalfLife2, Lucida Console, MS Shell Dlg 2, Marlett, Stratum2, Tahoma, Times New Roman, Trebuchet MS, Verdana
     "TitleFontSize": 26,
     "TitleTextScale": 0.45,
     "ListFontSize": 24,
@@ -45,6 +46,8 @@
   "TimeBasedUpdate": false,   // True = The list will updates if there any ranking changes on an interval set in UpdateInterval. False = Update on map change only
   "UpdateInterval": 300,      // The interval in seconds in which the list rankings will update
   "RecordStyle": "0",         // Set the style you want the be displayed on the times lists, 0 = normal times
+  "EnableBackground": true,   // Put a background behind the list for better readability
+  "BackgroundWidth": 30.0,    // How wide the background will be (I'll update to auto fit to text down the road)
   "SaveToDb": false,          // True = save your list coordinates to a database tables named "st_lists". False = save them to a local json in the plugin folder
   "AutoUpdateConfig": false,  // True = config automatically updates when you update to a new version of the plugin. False = Manually update your config
   "ConfigVersion": 6
