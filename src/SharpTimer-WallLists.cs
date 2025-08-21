@@ -20,7 +20,7 @@ namespace SharpTimerWallLists
     {
         public override string ModuleName => "SharpTimer Wall Lists";
         public override string ModuleAuthor => "Marchand";
-        public override string ModuleVersion => "1.0.6";
+        public override string ModuleVersion => "1.0.7";
 
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public static PluginCapability<IK4WorldTextSharedAPI> Capability_SharedAPI { get; } = new("k4-worldtext:sharedapi");
@@ -537,13 +537,13 @@ namespace SharpTimerWallLists
                     for (int i = 0; i < data.Count; i++)
                     {
                         var raw = data[i].Location;
-                        if (string.IsNullOrWhiteSpace(raw)) 
+                        if (string.IsNullOrWhiteSpace(raw))
                             continue;
 
                         // Parse "X Y Z" from the stored string
-                        var comps = raw
-                            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        if (comps.Length != 3) 
+                        raw = raw.Replace(",", "");
+                        var comps = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        if (comps.Length != 3)
                             continue;
 
                         if (!float.TryParse(comps[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var fx)
