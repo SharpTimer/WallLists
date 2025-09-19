@@ -891,7 +891,7 @@ namespace SharpTimerWallLists
                 header.BackgroundBorderWidth     = Config.BackgroundWidth;
                 header.BackgroundBorderHeight    = 0.0f;
                 header.BackgroundWorldToUV       = 0.05f;
-                header.BackgroundDepthOffset     = -0.0015f;
+                header.BackgroundDepthOffset     = -1.0f;
                 header.BackgroundMaxCharsPerLine = 32;
                 header.BackgroundWidthInflation  = 1.0f;
                 header.BackgroundPadChars        = 2;
