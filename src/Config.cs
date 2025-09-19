@@ -40,6 +40,9 @@ namespace SharpTimerWallLists
         [JsonPropertyName("RecordStyle")]
         public string RecordStyle { get; set; } = "0";
 
+        [JsonPropertyName("DefaultMode")]
+        public string DefaultMode { get; set; } = ""; // Standard, 85t, 102t, 128t, Source, Bhop, Custom
+
         [JsonPropertyName("EnableBackground")]
         public bool EnableBackground { get; set; } = true;
 
@@ -49,11 +52,14 @@ namespace SharpTimerWallLists
         [JsonPropertyName("RemoveDistance")]
         public float RemoveDistance { get; set; } = 200F;
 
+        [JsonPropertyName("MenuType")]
+        public string MenuType { get; set; } = "WasdMenu";
+
         [JsonPropertyName("AutoUpdateConfig")]
         public bool AutoUpdateConfig { get; set; } = false;
 
         [JsonPropertyName("ConfigVersion")]
-        public override int Version { get; set; } = 7;
+        public override int Version { get; set; } = 8;
     }
 
     public sealed class DatabaseSettings
@@ -159,8 +165,11 @@ namespace SharpTimerWallLists
         [JsonPropertyName("RemoveListCommand")]
         public string RemoveListCommand { get; set; } = "rlist";
 
+        [JsonPropertyName("MoveMenuCommand")]
+        public string MoveMenuCommand { get; set; } = "mlist";
+
         [JsonPropertyName("ReloadConfigCommand")]
-        public string ReloadConfigCommand { get; set; } = "reloadlistcfg";
+        public string ReloadConfigCommand { get; set; } = "reloadlists";
 
         [JsonPropertyName("UpdateConfigCommand")]
         public string UpdateConfigCommand { get; set; } = "updatelistcfg";
