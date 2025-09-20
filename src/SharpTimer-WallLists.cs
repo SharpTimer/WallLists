@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Dapper;
+using CS2MenuManager.API.Class;
 
 namespace SharpTimerWallLists
 {
@@ -20,11 +21,12 @@ namespace SharpTimerWallLists
     {
         public override string ModuleName => "SharpTimer Wall Lists";
         public override string ModuleAuthor => "Marchand";
-        public override string ModuleVersion => "1.0.7";
+        public override string ModuleVersion => "1.0.8";
 
         public required PluginConfig Config { get; set; } = new PluginConfig();
         public static PluginCapability<IK4WorldTextSharedAPI> Capability_SharedAPI { get; } = new("k4-worldtext:sharedapi");
         private CounterStrikeSharp.API.Modules.Timers.Timer? _updateTimer;
+        private bool _hasMenuManager;
         private List<int> _currentPointsList = new();
         private List<int> _currentTimesList = new();
         private List<int> _currentCompletionsList = new();
@@ -36,10 +38,12 @@ namespace SharpTimerWallLists
 
         public void OnConfigParsed(PluginConfig config)
         {
+            Config = config;
+
             if (config.Version < Config.Version)
                 Logger.LogWarning($"Configuration version mismatch (Expected: {0} | Current: {1})", Config.Version, config.Version);
 
-            Config = config;
+            ValidateMode();
         }
 
         public override void OnAllPluginsLoaded(bool hotReload)
@@ -52,7 +56,7 @@ namespace SharpTimerWallLists
             {
                 Logger.LogWarning($"Failed to reload config file.");
             }
-            
+
             if (Config.AutoUpdateConfig == true)
             {
                 try
@@ -63,6 +67,18 @@ namespace SharpTimerWallLists
                 {
                     Logger.LogWarning($"Failed to update config file.");
                 }
+            }
+
+            // Check for CS2MenuManager installation
+            try
+            {
+                var dummy = MenuManager.MenuTypesList;
+                _hasMenuManager = true;
+            }
+            catch (Exception)
+            {
+                _hasMenuManager = false;
+                Server.PrintToConsole("[Wall-Lists] CS2MenuManager API not found! Move menu command has been disabled.");
             }
 
             InitializeDatabasePathAndConnectionString();
@@ -91,13 +107,14 @@ namespace SharpTimerWallLists
                     LoadWorldTextFromJson(Server.MapName);
             });
 
-            AddCommand($"css_{Config.Commands.TimesListCommand}", "Sets up the map times list", OnTimesListAdd);
-            AddCommand($"css_{Config.Commands.PointsListCommand}", "Sets up the points list", OnPointsListAdd);
+            AddCommand($"css_{Config.Commands.TimesListCommand}",       "Sets up the map times list", OnTimesListAdd);
+            AddCommand($"css_{Config.Commands.PointsListCommand}",      "Sets up the points list", OnPointsListAdd);
             AddCommand($"css_{Config.Commands.CompletionsListCommand}", "Sets up the map completions list", OnCompletionsListAdd);
-            AddCommand($"css_{Config.Commands.RemoveListCommand}", "Removes the closest list (100 units max)", OnRemoveList);
-            AddCommand($"css_{Config.Commands.ReloadConfigCommand}", "Reloads the config file", ReloadConfigCommand);
-            AddCommand($"css_{Config.Commands.UpdateConfigCommand}", "Updates the config to the latest version", UpdateConfigCommand);
-            AddCommand("css_importwalllists", "Imports any existing JSON list locations into the database", OnImportLists);
+            AddCommand($"css_{Config.Commands.RemoveListCommand}",      "Removes the closest list (100 units max)", OnRemoveList);
+            AddCommand($"css_{Config.Commands.ReloadConfigCommand}",    "Reloads the config file", ReloadConfigCommand);
+            AddCommand($"css_{Config.Commands.UpdateConfigCommand}",    "Updates the config to the latest version", UpdateConfigCommand);
+            AddCommand($"css_{Config.Commands.MoveMenuCommand}",        "Open the WallLists move editor", Command_ListsMove);
+            AddCommand("css_importwalllists",                           "Imports any existing JSON list locations into the database", OnImportLists);
 
             if (Config.TimeBasedUpdate)
             {
@@ -126,8 +143,8 @@ namespace SharpTimerWallLists
                 var checkAPI = Capability_SharedAPI.Get();
                 if (checkAPI != null)
                 {
-                    _currentPointsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
-                    _currentTimesList.ForEach(id => checkAPI.RemoveWorldText(id, false));
+                    _currentPointsList.ForEach(id      => checkAPI.RemoveWorldText(id, false));
+                    _currentTimesList.ForEach(id       => checkAPI.RemoveWorldText(id, false));
                     _currentCompletionsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
                 }
                 _currentPointsList.Clear();
@@ -141,8 +158,8 @@ namespace SharpTimerWallLists
             var checkAPI = Capability_SharedAPI.Get();
             if (checkAPI != null)
             {
-                _currentPointsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
-                _currentTimesList.ForEach(id => checkAPI.RemoveWorldText(id, false));
+                _currentPointsList.ForEach(id      => checkAPI.RemoveWorldText(id, false));
+                _currentTimesList.ForEach(id       => checkAPI.RemoveWorldText(id, false));
                 _currentCompletionsList.ForEach(id => checkAPI.RemoveWorldText(id, false));
             }
             _currentPointsList.Clear();
@@ -179,7 +196,7 @@ namespace SharpTimerWallLists
                             return;
                         }
                     }
-                    
+
                     int topCount = listType switch
                     {
                         ListType.Points => List.PointsCount,
@@ -418,18 +435,18 @@ namespace SharpTimerWallLists
                             3 => rec.Location3,
                             _ => rec.Location4
                         };
-                        if (string.IsNullOrWhiteSpace(raw)) 
+                        if (string.IsNullOrWhiteSpace(raw))
                             continue;
 
                         // Split into "X Y Z","P Y R"
                         var parts = raw.Split(',', 2, StringSplitOptions.TrimEntries);
-                        if (parts.Length < 1) 
+                        if (parts.Length < 1)
                             continue;
 
                         // Parse X,Y,Z
                         var coords = parts[0]
                             .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        if (coords.Length != 3) 
+                        if (coords.Length != 3)
                             continue;
                         if (!float.TryParse(coords[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var fx) ||
                             !float.TryParse(coords[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var fy) ||
@@ -496,7 +513,7 @@ namespace SharpTimerWallLists
             }
         }
 
-        private async Task<bool> RemoveClosestJsonList( string mapName, Vector atPosition, CCSPlayerController player)
+        private async Task<bool> RemoveClosestJsonList(string mapName, Vector atPosition, CCSPlayerController player)
         {
             try
             {
@@ -526,12 +543,12 @@ namespace SharpTimerWallLists
                     };
                     var path = Path.Combine(mapsDirectory, filename);
 
-                    if (!File.Exists(path)) 
+                    if (!File.Exists(path))
                         continue;
 
                     var fileText = await File.ReadAllTextAsync(path);
                     var data = JsonSerializer.Deserialize<List<WorldTextData>>(fileText);
-                    if (data == null || data.Count == 0) 
+                    if (data == null || data.Count == 0)
                         continue;
 
                     for (int i = 0; i < data.Count; i++)
@@ -590,7 +607,7 @@ namespace SharpTimerWallLists
                 Server.NextFrame(() =>
                 {
                     player.PrintToChat(
-                        $"{pluginPrefix} Removed {bestType.Value} slot #{bestIndex+1} on {mapName}."
+                        $"{pluginPrefix} Removed {bestType.Value} slot #{bestIndex + 1} on {mapName}."
                     );
 
                     var api = Capability_SharedAPI.Get();
@@ -638,10 +655,10 @@ namespace SharpTimerWallLists
                     {
                         int topCount = listType switch
                         {
-                            ListType.Points         => List.PointsCount,
-                            ListType.Times          => List.TimesCount,
-                            ListType.Completions    => List.CompletionsCount,
-                            _                       => throw new ArgumentException("Invalid list type")
+                            ListType.Points      => List.PointsCount,
+                            ListType.Times       => List.TimesCount,
+                            ListType.Completions => List.CompletionsCount,
+                            _                    => throw new ArgumentException("Invalid list type")
                         };
 
                         var topList = await GetTopPlayersAsync(topCount, listType, mapName);
@@ -691,10 +708,10 @@ namespace SharpTimerWallLists
                     // Determine how many entries we need
                     int topCount = listType switch
                     {
-                        ListType.Points       => List.PointsCount,
-                        ListType.Times        => List.TimesCount,
-                        ListType.Completions  => List.CompletionsCount,
-                        _                     => throw new ArgumentException("Invalid list type")
+                        ListType.Points      => List.PointsCount,
+                        ListType.Times       => List.TimesCount,
+                        ListType.Completions => List.CompletionsCount,
+                        _                    => throw new ArgumentException("Invalid list type")
                     };
 
                     // Fetch the data
@@ -711,7 +728,7 @@ namespace SharpTimerWallLists
                         new { m = mapName, t = listType.ToString() }
                     );
 
-                    if (rec == null) 
+                    if (rec == null)
                         return;
 
                     // Spawn them on the next tick
@@ -740,8 +757,8 @@ namespace SharpTimerWallLists
                                 var rot   = ParseQAngle(parts[1]);
 
                                 var messageID = api.AddWorldText(TextPlacement.Wall, linesList, loc, rot);
-                                if (listType == ListType.Points)      _currentPointsList.Add(messageID);
-                                else if (listType == ListType.Times)  _currentTimesList.Add(messageID);
+                                if (listType == ListType.Points)           _currentPointsList.Add(messageID);
+                                else if (listType == ListType.Times)       _currentTimesList.Add(messageID);
                                 else if (listType == ListType.Completions) _currentCompletionsList.Add(messageID);
                             }
                         }
@@ -850,7 +867,7 @@ namespace SharpTimerWallLists
             }
 
             // Base 10, then +2 per character above 32
-            //float dynamicBorderWidth = 10.0f + Math.Max(0, longestLen - 32) * 2.0f;
+            // float dynamicBorderWidth = 10.0f + Math.Max(0, longestLen - 32) * 2.0f;
 
             // Header line with the single big background
             var header = new TextLine
@@ -874,7 +891,7 @@ namespace SharpTimerWallLists
                 header.BackgroundBorderWidth     = Config.BackgroundWidth;
                 header.BackgroundBorderHeight    = 0.0f;
                 header.BackgroundWorldToUV       = 0.05f;
-                header.BackgroundDepthOffset     = -0.0015f;
+                header.BackgroundDepthOffset     = -1.0f;
                 header.BackgroundMaxCharsPerLine = 32;
                 header.BackgroundWidthInflation  = 1.0f;
                 header.BackgroundPadChars        = 2;
@@ -939,7 +956,7 @@ namespace SharpTimerWallLists
         private void UpdateLists()
         {
             var mapName = Server.MapName;
-            
+
             Task.Run(async () =>
             {
                 try
@@ -989,8 +1006,8 @@ namespace SharpTimerWallLists
             var mapName = passedMapName ?? Server.MapName;
             var mapsDirectory = Path.Combine(ModuleDirectory, "maps");
 
-            var pointsPath = Path.Combine(mapsDirectory, $"{mapName}_pointslist.json");
-            var timesPath = Path.Combine(mapsDirectory, $"{mapName}_timeslist.json");
+            var pointsPath      = Path.Combine(mapsDirectory, $"{mapName}_pointslist.json");
+            var timesPath       = Path.Combine(mapsDirectory, $"{mapName}_timeslist.json");
             var completionsPath = Path.Combine(mapsDirectory, $"{mapName}_completionslist.json");
 
             LoadWorldTextFromFile(pointsPath, ListType.Points, mapName);
@@ -1051,6 +1068,33 @@ namespace SharpTimerWallLists
             }
 
             return $"{totalMinutes:D1}:{timeSpan.Seconds:D2}.{milliseconds}";
+        }
+
+        // Allowed modes
+        private static readonly HashSet<string> AllowedModesExact = new(StringComparer.Ordinal)
+        {
+            "Standard", "85t", "102t", "128t", "Source", "Bhop", "Custom"
+        };
+
+        private void ValidateMode()
+        {
+            var raw = Config.DefaultMode;
+
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                Config.DefaultMode = string.Empty; // "" = ignore mode
+                return;
+            }
+
+            // Validate exactly as typed
+            if (!AllowedModesExact.Contains(raw))
+            {
+                Logger.LogWarning($"Invalid DefaultMode '{raw}'. Allowed values: {string.Join(", ", AllowedModesExact)} or empty. Falling back to 'Standard'.");
+                Config.DefaultMode = "Standard";
+                return;
+            }
+
+            Config.DefaultMode = raw;
         }
     }
 

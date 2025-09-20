@@ -91,6 +91,13 @@ namespace SharpTimerWallLists
             string RecordStyle = Config.RecordStyle;
             string tableName = $"PlayerStats{(string.IsNullOrEmpty(tablePrefix) ? "" : $"_{tablePrefix}")}";
 
+            // Determine if we should filter by Mode. "" = ignore Mode, anything else = valid 
+            bool filterByMode = Config.DefaultMode.Length > 0;
+
+            // SQL calls for Mode depnding on DB type
+            string modeSql      = filterByMode ? " AND Mode = @Mode" : string.Empty;
+            string modePostgres = filterByMode ? " AND \"Mode\" = @Mode" : string.Empty;
+
             if (Config.DatabaseType == 1) // MySQL
             {
                 query = listType switch
@@ -117,7 +124,7 @@ namespace SharpTimerWallLists
                             TimerTicks,
                             DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
                         FROM PlayerRecords
-                        WHERE MapName = @MapName AND Style = {RecordStyle}
+                        WHERE MapName = @MapName AND Style = {RecordStyle}{modeSql}
                     )
                     SELECT SteamID, PlayerName, TimerTicks, playerPlace
                     FROM RankedPlayers
@@ -147,9 +154,11 @@ namespace SharpTimerWallLists
                     using var connection = new MySqlConnection(_connectionString);
                     object parameters = listType switch
                     {
-                        ListType.Points => new { TopCount = topCount },
-                        ListType.Completions => new { TopCount = topCount },
-                        ListType.Times => new { TopCount = topCount, MapName = mapName },
+                        ListType.Points       => new { TopCount = topCount },
+                        ListType.Completions  => new { TopCount = topCount },
+                        ListType.Times        => filterByMode
+                            ? new { TopCount = topCount, MapName = mapName, Mode = Config.DefaultMode }
+                            : new { TopCount = topCount, MapName = mapName },
                         _ => throw new ArgumentException("Invalid list type")
                     };
 
@@ -188,7 +197,7 @@ namespace SharpTimerWallLists
                             TimerTicks,
                             DENSE_RANK() OVER (ORDER BY TimerTicks ASC) AS playerPlace
                         FROM PlayerRecords
-                        WHERE MapName = @MapName AND Style = {RecordStyle}
+                        WHERE MapName = @MapName AND Style = {RecordStyle}{modeSql}
                     )
                     SELECT SteamID, PlayerName, TimerTicks, playerPlace
                     FROM RankedPlayers
@@ -219,9 +228,11 @@ namespace SharpTimerWallLists
                     connection.Open();
                     object parameters = listType switch
                     {
-                        ListType.Points => new { TopCount = topCount },
-                        ListType.Times => new { TopCount = topCount, MapName = mapName },
-                        ListType.Completions => new { TopCount = topCount },
+                        ListType.Points       => new { TopCount = topCount },
+                        ListType.Completions  => new { TopCount = topCount },
+                        ListType.Times        => filterByMode
+                            ? new { TopCount = topCount, MapName = mapName, Mode = Config.DefaultMode }
+                            : new { TopCount = topCount, MapName = mapName },
                         _ => throw new ArgumentException("Invalid list type")
                     };
 
@@ -259,7 +270,7 @@ namespace SharpTimerWallLists
                             ""TimerTicks"",
                             DENSE_RANK() OVER (ORDER BY ""TimerTicks"" ASC) AS playerPlace
                         FROM ""PlayerRecords""
-                        WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}
+                        WHERE ""MapName"" = @MapName AND ""Style"" = {RecordStyle}{modePostgres}
                     )
                     SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", playerPlace
                     FROM RankedPlayers
@@ -290,9 +301,11 @@ namespace SharpTimerWallLists
                     using var connection = new NpgsqlConnection(_connectionString);
                     object parameters = listType switch
                     {
-                        ListType.Points => new { TopCount = topCount },
-                        ListType.Times => new { TopCount = topCount, MapName = mapName },
-                        ListType.Completions => new { TopCount = topCount },
+                        ListType.Points       => new { TopCount = topCount },
+                        ListType.Completions  => new { TopCount = topCount },
+                        ListType.Times        => filterByMode
+                            ? new { TopCount = topCount, MapName = mapName, Mode = Config.DefaultMode }
+                            : new { TopCount = topCount, MapName = mapName },
                         _ => throw new ArgumentException("Invalid list type")
                     };
 
