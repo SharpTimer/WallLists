@@ -47,6 +47,7 @@
   "TimeBasedUpdate": false,   // True = The list will updates if there any ranking changes on an interval set in UpdateInterval. False = Update on map change only
   "UpdateInterval": 300,      // The interval in seconds in which the list rankings will update
   "RecordStyle": "0",         // Set the style you want the be displayed on the times lists, 0 = normal times
+  "DefaultMode": "85t",       // Set the mode you want the be displayed on the times lists (Standard, 85t, 102t, 128t, Source, Bhop, Custom). If you're using an old version of SharpTimer that doesn't have modes, leave it blank.
   "EnableBackground": true,   // Put a background behind the list for better readability
   "BackgroundWidth": 30.0,    // How wide the background will be (I'll update to auto fit to text down the road)
   "RemoveDistance": 200,      // How close you need to be to a list for it to be picked up by the removal command
