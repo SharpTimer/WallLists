@@ -10,7 +10,7 @@
 
   <p align="center">
     <br />
-    <a href="https://github.com/SharpTimer/WallLists/releases/tag/1.0.6">Download</a>
+    <a href="https://github.com/SharpTimer/WallLists/releases/">Download</a>
   </p>
 </div>
 
@@ -21,8 +21,10 @@
 To use this server addon, you'll need the following dependencies installed:
 
 - [**CounterStrikeSharp**](https://github.com/roflmuffin/CounterStrikeSharp/releases): CounterStrikeSharp allows you to write server plugins in C# for Counter-Strike 2.
-- [**K4-WorldText-API**](https://github.com/M-archand/K4-WorldText-API/releases/tag/1.2.4): This is a shared developer API to handle world text.
 - [**SharpTimer**](https://github.com/Letaryat/poor-sharptimer): SharpTimer is a timer plugin for game modes such as Surf or BHOP.
+- [**K4-WorldText-API**](https://github.com/M-archand/K4-WorldText-API/releases): This is a shared developer API to handle world text.
+- [**CS2MenuManager (optional)**](https://github.com/schwarper/cs2menumanager): This is a shared developer API to handle menus. It's only required if you want to use the list move menu command.
+
   
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -35,8 +37,9 @@ All commands can be configured, these are the default commands:
 - !tlist  - Create a map records list for the current map in front of the player and save it to a config file or database.
 - !plist - Create a points list in front of the player and save it to a config file or database.
 - !clist - Create a # of map completions list in fron of the player and save it to a config file or database.
-- !rlist - Remove the closest list from your position. (200 units max)
-- !reloadlistcfg - Reload your config live in-game. Takes about 15 seconds.
+- !rlist - Remove the closest list from your position.
+- !mlist - Opens a menu that allows you to adjust menu locations/angles by small increments. Currently only supports lists saved to a database.
+- !reloadlistcfg - Reload your config live in-game.
 - !updatelistcfg - Update your config with any new variables that have been added in a new version.
 
 <!-- CONFIG -->
@@ -50,21 +53,7 @@ All commands can be configured, these are the default commands:
 
 ## Roadmap
 
-- [X] Update for SharpTimer usage.
-- [X] Add color configs. See [here](https://i.sstatic.net/lsuz4.png) for color names.
-- [X] Add font size & scale to config.
-- [X] Add SQLite & PostgreSQL support. // 1=MySQL, 2=SQLite, 3=PostgreSQL
-- [X] Merge MapList/PointsList plugins into a single plugin.
-- [X] Add database table prefix to config to support latest version of SharpTimer.
-- [X] Fix inconsistent results for !removelist
-- [X] Add configurabled commands.
-- [X] Add configurable permissions.
-- [X] Add left alignment.
-- [X] Add a Map Completions List.
-- [X] Add alignment options for each type of list.
-- [X] Add database support for more convenient multi-server maintencance.
-- [ ] Add minor position adjustment menu
-- [ ] Add configurable font
+- [ ] Add command arguments to allow for multiple types of Times lists, e.g. multiple styles, modes, etc.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
