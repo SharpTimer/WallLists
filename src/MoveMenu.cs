@@ -164,10 +164,10 @@ namespace SharpTimerWallLists
 
             AddMove(m, "(Y - 5)", slot, new Vector(0, -step, 0), ZeroAng());
             AddMove(m, "(Y + 5)", slot, new Vector(0, +step, 0), ZeroAng());
-            AddMove(m, "Move Up    (Z + 5)", slot, new Vector(0, 0, +step), ZeroAng());
-            AddMove(m, "Move Down  (Z - 5)", slot, new Vector(0, 0, -step), ZeroAng());
             AddMove(m, "(X + 5)", slot, new Vector(+step, 0, 0), ZeroAng());
             AddMove(m, "(X - 5)", slot, new Vector(-step, 0, 0), ZeroAng());
+            AddMove(m, "Move Up    (Z + 5)", slot, new Vector(0, 0, +step), ZeroAng());
+            AddMove(m, "Move Down  (Z - 5)", slot, new Vector(0, 0, -step), ZeroAng());
 
             m.Display(player, 0);
         }
