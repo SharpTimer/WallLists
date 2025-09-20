@@ -8,7 +8,7 @@
     "password": "password",
     "port": 3306,
     "sslmode": "none",
-    "table-prefix": ""      // Empty means you have no prefix (PlayerRecords, PlayerStats). "XX_" means your tables have a prefix (XX_PlayerRecords, XX_PlayerStats)
+    "table-prefix": ""      // Empty means you have no prefix (PlayerStats). "XX_" means your table has a prefix (XX_PlayerStats)
   },
   "ListSettings": {
     "TimesTitleText": "|---- Map Times ----|",          // The title for the list
@@ -22,7 +22,7 @@
     "CompletionsCount": 5                               // Number of spots on the list
   },
   "TextSettings": {
-    "FontName": "Arial Bold",   // Examples; Arial, Arial Black, Arial Bold, Arial Narrow, Arial Unicode MS, Comic Sans MS, Courier New, HalfLife2, Lucida Console, MS Shell Dlg 2, Marlett, Stratum2, Tahoma, Times New Roman, Trebuchet MS, Verdana
+    "FontName": "Arial Bold",   // Examples: Arial, Arial Black, Arial Bold, Arial Narrow, Arial Unicode MS, Comic Sans MS, Courier New, HalfLife2, Lucida Console, MS Shell Dlg 2, Marlett, Stratum2, Tahoma, Times New Roman, Trebuchet MS, Verdana
     "TitleFontSize": 26,
     "TitleTextScale": 0.45,
     "ListFontSize": 24,
@@ -39,6 +39,7 @@
     "PointsListCommand": "plist",           // The command to add a points list, in game use !plist
     "CompletionsListCommand": "clist",      // The command to add a completions list, in game use !clist
     "RemoveListCommand": "rlist",           // The command to remove the closest list, in game use !rlist
+    "MoveMenuCommand": "mlist",             // The command to open the move menu, in game use !mlist
     "ReloadConfigCommand": "reloadlistcfg", // Reloads the config and refreshes the lists
     "UpdateConfigCommand": "updatelistcfg", // Updates your cfg to the latest version
     "CommandPermission": "@css/root"        // The permission required to use these commands
@@ -48,7 +49,9 @@
   "RecordStyle": "0",         // Set the style you want the be displayed on the times lists, 0 = normal times
   "EnableBackground": true,   // Put a background behind the list for better readability
   "BackgroundWidth": 30.0,    // How wide the background will be (I'll update to auto fit to text down the road)
-  "SaveToDb": false,          // True = save your list coordinates to a database tables named "st_lists". False = save them to a local json in the plugin folder
+  "RemoveDistance": 200,      // How close you need to be to a list for it to be picked up by the removal command
+  "MenuType": "WasdMenu",     // The type of menu that will be used for the !mlist command. WasdMenu, ChatMenu, CenterHtmlMenu
+  "SaveToDb": false,          // True = save your list coordinates to a database tables named `st_lists`. False = save them to a local json in the plugin folder
   "AutoUpdateConfig": false,  // True = config automatically updates when you update to a new version of the plugin. False = Manually update your config
-  "ConfigVersion": 6
+  "ConfigVersion": 8
 }
